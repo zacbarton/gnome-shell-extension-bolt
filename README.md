@@ -1,2 +1,1 @@
-gnome-shell-extension-bolt
-==========================
+[![Flattr Button](http://api.flattr.com/button/button-static-50x60.png "Flattr This!")](https://flattr.com/thing/668733 "Bolt Gnome shell extension")
