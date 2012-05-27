@@ -38,4 +38,4 @@ Bolt can be easily configured through http://extensions.gnome.org or via the sem
 * intergrate search-provider extensions
 
 
-[![Flattr Button](http://api.flattr.com/button/button-static-50x60.png "Flattr This!")](https://flattr.com/thing/668733 "Bolt Gnome-shell extension")
+[![Flattr Button](http://api.flattr.com/button/button-static-50x60.png "Flattr This!")](https://flattr.com/thing/668930 "Bolt Gnome-shell extension")
