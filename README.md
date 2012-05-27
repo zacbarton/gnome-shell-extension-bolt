@@ -1,8 +1,6 @@
-# gnome-shell-extension-bolt
+# Bolt
 
 Bolt is a launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu.
-
-# Screenshots
 
 ![Screenshot](https://github.com/zacbarton/) 
 
@@ -12,22 +10,22 @@ Bolt can be easily configured through http://extensions.gnome.org or via the sem
 
 ![Screenshot](https://github.com/zacbarton/)
 
-# Installation
+## Installation
 
 * https://extensions.gnome.org/extension/xxx
 
 
-# Dependencies
+## Dependencies
 
 * Zeitgeist
 
 
-# Known bugs
+## Known bugs
 
 * After disabling bolt and viewing the overview gnome-shell sometimes crashes
 
 
-# Future
+## Future
 
 * workspace management
 * improved themeing support
