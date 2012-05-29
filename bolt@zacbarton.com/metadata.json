@@ -1,0 +1,9 @@
+{
+	"description": "A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu."
+	, "name": "Bolt"
+	, "shell-version": ["3.4"]
+	, "settings-schema": "org.gnome.shell.extensions.bolt"
+	, "url": "https://github.com/zacbarton/gnome-shell-extension-bolt"
+	, "uuid": "bolt@zacbarton.com"
+	, "version": 1
+}

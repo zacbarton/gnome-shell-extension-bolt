@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extensions">
+	<schema path="/org/gnome/shell/extensions/bolt/" id="org.gnome.shell.extensions.bolt">
+		<key type="b" name="blur-background">
+			<default>true</default>
+			<summary>Blur covered windows</summary>
+			<description></description>
+		</key>
+		<key type="b" name="match-wallpaper">
+			<default>true</default>
+			<summary>Match wallpaper color</summary>
+			<description></description>
+		</key>
+		<key type="s" name="custom-background-color">
+			<default>'rgba(0, 0, 0, 0.60)'</default>
+			<summary>Custom background color</summary>
+			<description></description>
+		</key>
+		
+		<key type="b" name="automattic-sizing">
+			<default>true</default>
+			<summary>Automattic sizing</summary>
+			<description></description>
+		</key>
+		<key type="s" name="custom-size">
+			<default>'9x4'</default>
+			<summary>Custom size</summary>
+			<description></description>
+		</key>
+
+		<key type="d" name="show-animation-time">
+			<default>0</default>
+			<summary>Show animation time (in seconds)</summary>
+			<description></description>
+		</key>
+		<key type="b" name="always-open-to-home">
+			<default>true</default>
+			<summary>Always show the home tab when open</summary>
+			<description></description>
+		</key>
+		<key type="b" name="show-applications">
+			<default>true</default>
+			<summary>Show applications tab</summary>
+			<description></description>
+		</key>
+		<key type="b" name="show-files">
+			<default>true</default>
+			<summary>Show files tab</summary>
+			<description></description>
+		</key>
+		<key type="b" name="show-contacts">
+			<default>true</default>
+			<summary>Show contacts tab</summary>
+			<description></description>
+		</key>
+		<key type="b" name="show-system">
+			<default>true</default>
+			<summary>Show system tab</summary>
+			<description></description>
+		</key>
+
+		<key type="b" name="search-files-and-folders">
+			<default>true</default>
+			<summary>Search files and folders</summary>
+			<description></description>
+		</key>
+		<key type="b" name="search-contacts">
+			<default>true</default>
+			<summary>Search contacts</summary>
+			<description></description>
+		</key>
+
+		<key type="s" name="home-applications-type">
+			<default>'recent'</default>
+			<summary>Type of applications to show on the home tab</summary>
+			<description></description>
+		</key>
+		<key type="b" name="home-show-recent-files">
+			<default>true</default>
+			<summary>Show recent files in the home tab</summary>
+			<description></description>
+		</key>
+		<key type="b" name="home-show-downloads">
+			<default>true</default>
+			<summary>Show downloads in the home tab</summary>
+			<description></description>
+		</key>
+	</schema>
+</schemalist>
