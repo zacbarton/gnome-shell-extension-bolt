@@ -3,13 +3,12 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const Shell = imports.gi.Shell;
 const Signals = imports.signals;
-const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
-const IconGrid = imports.ui.iconGrid;
 
 const Extension = imports.misc.extensionUtils.getBoltExtension();
 
-const Animator = Extension.imports.libs.Animator;
+const Activities = Extension.imports.libs.Activities;
+const DisplayManager = Extension.imports.libs.DisplayManager;
 const ThemeManager = Extension.imports.libs.ThemeManager;
 const KeyboardManager = Extension.imports.libs.KeyboardManager;
 const SettingsManager = Extension.imports.libs.SettingsManager;
@@ -18,6 +17,8 @@ const Utils = Extension.imports.libs.Utils;
 
 const Blur = Extension.imports.widgets.Blur;
 const Prefs = Extension.imports.widgets.Prefs;
+const IconGrid = Extension.imports.widgets.IconGrid;
+const BoxPointer = Extension.imports.widgets.BoxPointer;
 
 const HomeView = Extension.imports.views.HomeView;
 const ApplicationsView = Extension.imports.views.ApplicationsView;
@@ -30,15 +31,17 @@ const Bolt = new Lang.Class({
 	Name: "Bolt",
 
 	_init: function() {
+		this.isPopup = null;
+		this.enabled = null;
+
 		this.dir = Extension.dir;
 		this.metadata = Extension.metadata;
-		this.animator = new Animator.Animator(this);
+		this.activities = new Activities.Activities(this);
 		this.themeManager = new ThemeManager.ThemeManager(this);
+		this.displayManager = new DisplayManager.DisplayManager(this);
 		this.settingsManager = new SettingsManager.SettingsManager(this);
 		this.keyboardManager = new KeyboardManager.KeyboardManager(this);
 		this.overviewOverride = new OverviewOverride.OverviewOverride(this);
-
-		this.activitiesText = Main.panel._activitiesButton._label.get_text();
 	},
 
 	setSizeAndPosition: function(size) {
@@ -51,8 +54,7 @@ const Bolt = new Lang.Class({
 		let iconGridHeight = 130;
 
 		// create a temp iconGrid so we can fetch the current styles size
-		let iconGrid = new IconGrid.IconGrid();
-		iconGrid.actor.hide();
+		let iconGrid = new IconGrid.IconGrid({}, false);
 		this.panels.add_actor(iconGrid.actor);
 
 		// get the sizes from the theme
@@ -77,17 +79,17 @@ const Bolt = new Lang.Class({
 			width = iconGridWidth * size[0];
 			height = iconGridHeight * size[1];
 		}
-	
+
 		// FIXME doco the magic numbers
 		width += 15;
-		height += 110;
-	
+		height += 95;
+
 		this.iconsPerRow = Math.floor(width / iconGridWidth);
 
 		// ive tried with partial success using BindConstraint and SnapConstraint on the coverPane, 
-		// container and blur but kept seeing issues with mutli-monitor setups where the constraints
+		// actor and blur but kept seeing issues with mutli-monitor setups where the constraints
 		// didnt seem to be updated or events we not captured. i also noticed that sometimes the height 
-		// of the container would increase in height and then quickly revert. its a shame but manually 
+		// of the actor would increase in height and then quickly revert. its a shame but manually 
 		// setting the size and positions so that everything always matches seems to be the best solution :-(
 
 		this.coverPane.x = 1; // allow the hot corner to work
@@ -95,10 +97,22 @@ const Bolt = new Lang.Class({
 		this.coverPane.width = global.stage.width;
 		this.coverPane.height = global.stage.height;
 
-		this.container.x = this.blur.actor.x = Main.layoutManager.panelBox.x;
-		this.container.y = this.blur.actor.y = Main.layoutManager.panelBox.y + Main.layoutManager.panelBox.height;
-		this.container.width = this.blur.actor.width = width;
-		this.container.height = this.blur.actor.height = height;
+		this.content.width = this.blur.actor.width = width;
+		this.content.height = this.blur.actor.height = height;
+
+		if (this.isPopup === null) {
+			this.isPopup = this.actor.get_theme_node().get_double("-bolt-is-popup") === 1;
+
+			if (this.isPopup === true) {
+				this.boxPointer.actor.style_class = "panel-menu popup-menu-boxpointer";
+				this.actor.raise(Main.layoutManager.panelBox);
+			} else if (this.isPopup === false) {
+				this.boxPointer.actor.style_class = "";
+				this.actor.lower(Main.layoutManager.panelBox);
+			}
+
+			this.coverPane.lower(this.actor);
+		}
 	},
 
 	selectTab: function(tab) {
@@ -145,23 +159,20 @@ const Bolt = new Lang.Class({
 	},
 
 	show: function() {
-		// hide the active application icon
-		Main.panel._appMenu.actor.hide();
-
-		this.animator.show();
-
-		this.focusOnSelectedTab();
+		if (!this.themeManager.reloading) {
+			this.displayManager.show();
+			this.focusOnSelectedTab();
+		}
 	},
 
 	hide: function() {
-		// re-show the active application icon
-		Main.panel._appMenu.actor.show();
-
-		this.animator.hide();
+		if (!this.themeManager.reloading) {
+			this.displayManager.hide();
+		}
 	},
 
 	toggle: function() {
-		if (this.container.visible) {
+		if (this.actor.visible) {
 			this.hide();
 		} else {
 			this.show();
@@ -170,61 +181,73 @@ const Bolt = new Lang.Class({
 
 	// extension system entry points
 	enable: function() {
+		this.isPopup = null;
+		this.enabled = true;
+
 		// core elements
-		this.coverPane = new St.BoxLayout({name: "coverPane"
+		this.coverPane = new St.BoxLayout({name: "bolt-coverPane"
 			, visible: false
 			, reactive: true
-			// , style: "background: red !important;"
+			// , style: "background: rgba(255, 0, 0, .5);"
 		});
-		
-		this.container = new St.BoxLayout({name: "bolt"
+
+		this.actor = new St.BoxLayout({name: "bolt"
 			, vertical: true
 			, visible: false
-			, reactive: false
 		});
-		Utils.addExtraCssSupport(this.container);
 
-			this.tabs = new St.BoxLayout({style_class: "tabs"
-				, visible: true
-				, reactive: true
-			});
-			this.tabs.connect("captured-event", Lang.bind(this, function(actor, event) {
-				if (event.type() == Clutter.EventType.BUTTON_PRESS) {
-					let sourceActor = event.get_source();
+			this.boxPointer = new BoxPointer.BoxPointer(this);
+			this.actor.add_actor(this.boxPointer.actor);
 
-					if (sourceActor.has_style_class_name("tab")) {
-						this.selectTab(sourceActor);
-					}
-				}
-			}));
-			Utils.addExtraCssSupport(this.tabs);
-			this.container.add_actor(this.tabs);
+				this.blur = new Blur.Blur(this);
+				this.boxPointer._border.add_actor(this.blur.actor);
 
-			this.panels = new Shell.Stack({style_class: "panels"
-				, reactive: true
-			});
-			this.panels.connect("captured-event", Lang.bind(this, function(actor, event) {
-				if (event.type() == Clutter.EventType.BUTTON_PRESS) {
-					let sourceActor = event.get_source();
+					this.content = new St.BoxLayout({style_class: "content"
+						, vertical: true
+						, visible: true
+					});
+					Utils.addExtraCssSupport(this.content);
+					this.boxPointer.bin.set_child(this.content);
 
-					if (sourceActor.has_style_class_name("tab")) {
-						this.activeTab.delegate.activate(sourceActor);
-					}
-				}
-			}));
-			Utils.addExtraCssSupport(this.panels);
-			this.container.add(this.panels, {x_fill: true, y_fill: true, expand: true});
+						this.tabs = new St.BoxLayout({style_class: "tabs"
+							, visible: true
+							, reactive: true
+						});
+						this.tabs.connect("captured-event", Lang.bind(this, function(actor, event) {
+							if (event.type() == Clutter.EventType.BUTTON_PRESS) {
+								let sourceActor = event.get_source();
+
+								if (sourceActor.has_style_class_name("tab")) {
+									this.selectTab(sourceActor);
+								}
+							}
+						}));
+						Utils.addExtraCssSupport(this.tabs);
+						this.content.add_actor(this.tabs);
+
+						this.panels = new Shell.Stack({style_class: "panels"
+							, reactive: true
+						});
+						this.panels.connect("captured-event", Lang.bind(this, function(actor, event) {
+							if (event.type() == Clutter.EventType.BUTTON_PRESS) {
+								let sourceActor = event.get_source();
+
+								if (sourceActor.has_style_class_name("category")) {
+									this.activeTab.delegate.activate(sourceActor);
+								}
+							}
+						}));
+						Utils.addExtraCssSupport(this.panels);
+						this.content.add(this.panels, {x_fill: true, y_fill: true, expand: true});
 
 		global.focus_manager.add_group(this.tabs);
-
-		// ui elements
-		this.blur = new Blur.Blur(this);
 
 		// data actors
 		this.homeView = new HomeView.HomeView(this);
 		this.tabs.add_actor(this.homeView.tab);
 		this.panels.add_actor(this.homeView.panelScroll);
 
+		// ui elements
 		this.applicationsView = new ApplicationsView.ApplicationsView(this);
 		this.tabs.add_actor(this.applicationsView.tab);
 		this.panels.add_actor(this.applicationsView.panel);
@@ -246,7 +269,8 @@ const Bolt = new Lang.Class({
 		this.panels.add_actor(this.searchView.panelScroll);
 
 		this.prefs = new Prefs.Prefs();
-		this.container.add(this.prefs.actor, {x_fill: false, y_fill: false, expand: false});
+		this.prefs.actor.set_fixed_position_set(true);
+		this.tabs.add_actor(this.prefs.actor);
 		this.prefs.actor.add_constraint(new Clutter.AlignConstraint({source: this.searchView.tab, align_axis: Clutter.AlignAxis.Y_AXIS, factor: 0.59}));
 		this.prefs.actor.add_constraint(new Clutter.BindConstraint({source: this.searchView.tab, coordinate: Clutter.BindCoordinate.X, offset: -20}));
 
@@ -257,35 +281,31 @@ const Bolt = new Lang.Class({
 
 		// add to layout
 		Main.layoutManager.addChrome(this.coverPane);
-		Main.layoutManager.addChrome(this.blur.actor);
-		Main.layoutManager.addChrome(this.container);
+		Main.layoutManager.addChrome(this.actor);
 
-		// ensure we sit under the panel
-		this.container.lower(Main.layoutManager.panelBox);
-		this.blur.actor.lower(this.container);
-		this.coverPane.lower(this.blur.actor);
-
-
-		Main.panel._activitiesButton._label.set_text("Bolt");
+		// setup z-index's
+		this.blur.actor.lower(this.content);
 
 		// setup libs
+		this.activities.enable(true);
 		this.themeManager.enable(true);
 		this.settingsManager.enable(true);
 		this.keyboardManager.enable(true);
 		this.overviewOverride.enable(true);
 	},
-	
+
 	disable: function() {
+		this.isPopup = null;
+		this.enabled = false;
+
+		this.activities.enable(false);
 		this.themeManager.enable(false);
 		this.settingsManager.enable(false);
 		this.keyboardManager.enable(false);
 		this.overviewOverride.enable(false);
 
-		Main.panel._activitiesButton._label.set_text(this.activitiesText);
-
 		// remove from layout
-		Main.layoutManager.removeChrome(this.container);
-		Main.layoutManager.removeChrome(this.blur.actor);
+		Main.layoutManager.removeChrome(this.actor);
 		Main.layoutManager.removeChrome(this.coverPane);
 
 		// data actors
@@ -297,13 +317,13 @@ const Bolt = new Lang.Class({
 		this.homeView.destroy();
 		this.prefs.destroy();
 
-		// xx
-		this.blur.destroy();
-		
 		this.panels.destroy();
 		this.tabs.destroy();
 
-		this.container.destroy();
+		this.blur.destroy();
+		this.boxPointer.destroy();
+
+		this.actor.destroy();
 		this.coverPane.destroy();
 	}
 });

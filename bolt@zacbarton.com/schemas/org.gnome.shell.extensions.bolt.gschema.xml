@@ -16,7 +16,7 @@
 			<summary>Custom background color</summary>
 			<description></description>
 		</key>
-		
+
 		<key type="b" name="automattic-sizing">
 			<default>true</default>
 			<summary>Automattic sizing</summary>
@@ -25,6 +25,11 @@
 		<key type="s" name="custom-size">
 			<default>'9x4'</default>
 			<summary>Custom size</summary>
+			<description></description>
+		</key>
+		<key type="s" name="theme-size">
+			<default>'medium'</default>
+			<summary>Theme size</summary>
 			<description></description>
 		</key>
 
@@ -38,6 +43,12 @@
 			<summary>Always show the home tab when open</summary>
 			<description></description>
 		</key>
+		<key type="b" name="change-activities-text">
+			<default>true</default>
+			<summary>Change "Activities" to "Bolt"</summary>
+			<description></description>
+		</key>
+
 		<key type="b" name="show-applications">
 			<default>true</default>
 			<summary>Show applications tab</summary>

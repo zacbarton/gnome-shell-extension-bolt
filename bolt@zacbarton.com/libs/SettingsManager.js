@@ -44,7 +44,6 @@ const SettingsManager = new Lang.Class({
 				}
 			})),
 
-
 			this.settings.connect("changed::" + Settings.AUTOMATTIC_SIZING, Lang.bind(this, function() {
 				this.setSize();
 			})),
@@ -54,7 +53,9 @@ const SettingsManager = new Lang.Class({
 					this.setSize();
 				}
 			})),
-
+			this.settings.connect("changed::" + Settings.THEME_SIZE, Lang.bind(this, function() {
+				this.setThemeSize();
+			})),
 
 			this.settings.connect("changed::" + Settings.SHOW_ANIMATION_TIME, Lang.bind(this, function() {
 				this.setShowAnimationTime();
@@ -62,6 +63,10 @@ const SettingsManager = new Lang.Class({
 			this.settings.connect("changed::" + Settings.ALWAYS_OPEN_TO_HOME, Lang.bind(this, function() {
 				this.setAlwaysOpenToHomeView();
 			})),
+			this.settings.connect("changed::" + Settings.CHANGE_ACTIVITIES_TEXT, Lang.bind(this, function() {
+				this.setActivitiesText();
+			})),
+
 			this.settings.connect("changed::" + Settings.SHOW_APPLICATIONS, Lang.bind(this, function() {
 				this.setShowApplications();
 			})),
@@ -75,14 +80,12 @@ const SettingsManager = new Lang.Class({
 				this.setShowSystem();
 			})),
 
-
 			this.settings.connect("changed::" + Settings.SEARCH_FILES_AND_FOLDERS, Lang.bind(this, function() {
 				this.setSearchFilesAndFolders();
 			})),
 			this.settings.connect("changed::" + Settings.SEARCH_CONTACTS, Lang.bind(this, function() {
 				this.setSearchContacts();
 			})),
-
 
 			this.settings.connect("changed::" + Settings.HOME_APPLICATIONS_TYPE, Lang.bind(this, function() {
 				this.setHomeApplicationsType();
@@ -97,12 +100,16 @@ const SettingsManager = new Lang.Class({
 	},
 
 	apply: function() {
+		this.setThemeSize();
 		this.setSize();
+
 		this.setBlur();
 		this.setBackgroundColor();
 
 		this.setShowAnimationTime();
 		this.setAlwaysOpenToHomeView();
+		this.setActivitiesText();
+		
 		this.setShowApplications();
 		this.setShowFiles();
 		this.setShowContacts();
@@ -128,23 +135,28 @@ const SettingsManager = new Lang.Class({
 			this.bolt.themeManager.setBackgroundColor(this.settings.get_string(Settings.CUSTOM_BACKGROUND_COLOR));
 		}
 	},
+
+	setThemeSize: function() {
+		this.bolt.themeManager.setSize(this.settings.get_string(Settings.THEME_SIZE));
+	},
 	setSize: function() {
 		if (this.settings.get_boolean(Settings.AUTOMATTIC_SIZING)) {
 			this.bolt.setSizeAndPosition("auto");
 		} else {
 			this.bolt.setSizeAndPosition(this.settings.get_string(Settings.CUSTOM_SIZE).split("x"));
 		}
-
-		this.bolt.blur.setPorthole();
 	},
-
 
 	setShowAnimationTime: function() {
-		this.bolt.animator.showAnimationTime = this.settings.get_double(Settings.SHOW_ANIMATION_TIME);
+		this.bolt.displayManager.showAnimationTime = this.settings.get_double(Settings.SHOW_ANIMATION_TIME);
 	},
 	setAlwaysOpenToHomeView: function() {
-		this.bolt.animator.alwaysOpenToHomeView = this.settings.get_boolean(Settings.ALWAYS_OPEN_TO_HOME);
+		this.bolt.displayManager.alwaysOpenToHomeView = this.settings.get_boolean(Settings.ALWAYS_OPEN_TO_HOME);
 	},
+	setActivitiesText: function() {
+		this.bolt.activities.enable(this.settings.get_boolean(Settings.CHANGE_ACTIVITIES_TEXT));
+	},
+
 	setShowApplications: function() {
 		this.bolt.applicationsView.tab.visible = this.settings.get_boolean(Settings.SHOW_APPLICATIONS);
 	},
@@ -158,14 +170,12 @@ const SettingsManager = new Lang.Class({
 		this.bolt.systemView.tab.visible = this.settings.get_boolean(Settings.SHOW_SYSTEM);
 	},
 
-
 	setSearchFilesAndFolders: function() {
 		this.bolt.searchView.filesAndFoldersEnable(this.settings.get_boolean(Settings.SEARCH_FILES_AND_FOLDERS));
 	},
 	setSearchContacts: function() {
 		this.bolt.searchView.contactsEnable(this.settings.get_boolean(Settings.SEARCH_CONTACTS));
 	},
-
 
 	setHomeApplicationsType: function() {
 		this.bolt.homeView.applicationsType = this.settings.get_string(Settings.HOME_APPLICATIONS_TYPE);

@@ -16,9 +16,9 @@ const Blur = new Lang.Class({
 
 		this.blurEffect = new Clutter.BlurEffect();
 
-		this.actor = new St.BoxLayout({name: "blur"
+		this.actor = new St.BoxLayout({style_class: "blur"
 			, vertical: true
-			, visible: false
+			, visible: true
 			, reactive: false
 			, clip_to_allocation: true
 		});
@@ -54,7 +54,24 @@ const Blur = new Lang.Class({
 
 	setPorthole: function() {
 		if (this.thumbnail) {
-			this.thumbnail.setPorthole(0, Main.layoutManager.panelBox.height, this.actor.width, this.actor.height);
+			if (this.bolt.isPopup) {
+				let arrowRise = 0;
+				let borderWidth = 0;
+				let paddingLeft = 0;
+				let paddingTop = 0;
+				let boxPointerThemeNode = this.bolt.boxPointer.actor.peek_theme_node();
+
+				if (boxPointerThemeNode) {
+					arrowRise = boxPointerThemeNode.get_length("-arrow-rise");
+					borderWidth = boxPointerThemeNode.get_length("-arrow-border-width");
+					paddingLeft = boxPointerThemeNode.get_padding(St.Side.LEFT);
+					paddingTop = boxPointerThemeNode.get_padding(St.Side.TOP);
+				}
+
+				this.thumbnail.setPorthole(this.bolt.boxPointer.actor.x + borderWidth + paddingLeft, this.bolt.boxPointer.actor.y + borderWidth + arrowRise + paddingTop, this.actor.width, this.actor.height);
+			} else {
+				this.thumbnail.setPorthole(0, Main.layoutManager.panelBox.height, this.actor.width, this.actor.height);
+			}
 		}
 	},
 
@@ -68,7 +85,7 @@ const Blur = new Lang.Class({
 
 		this.thumbnail.syncStacking(stackIndices);
 	},
-	
+
 	setForWorkspace: function() {
 		this.setThumbnail();
 		this.setPorthole();
@@ -76,14 +93,7 @@ const Blur = new Lang.Class({
 
 	enable: function(enabled) {
 		this.enabled = enabled;
-	},
-
-	show: function() {
-		this.actor.show();
-	},
-
-	hide: function() {
-		this.actor.hide();
+		this.actor.visible = this.enabled;
 	},
 
 	destroy: function() {
@@ -100,7 +110,7 @@ const Blur = new Lang.Class({
 		}
 
 		this.blurEffect = null;
-		
+
 		this.actor.destroy();
 	}
 });

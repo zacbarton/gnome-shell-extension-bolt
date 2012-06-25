@@ -3,7 +3,6 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Pango = imports.gi.Pango;
-const Signals = imports.signals;
 const Mainloop = imports.mainloop;
 const PlaceDisplay = imports.ui.placeDisplay;
 
@@ -25,7 +24,7 @@ const FilesView = new Lang.Class({
 
 	_init: function(bolt) {
 		this.parent("Files");
-		
+
 		this.bolt = bolt;
 		this.iconCache = {};
 		this.placesManager = new PlaceDisplay.PlacesManager();
@@ -41,6 +40,8 @@ const FilesView = new Lang.Class({
 		];
 
 		this.render();
+
+		// select the first category
 		this.selectCategory(this.subTabs.get_first_child(), true);
 	},
 
@@ -49,7 +50,7 @@ const FilesView = new Lang.Class({
 			switch (subTabIndex) {
 				case 0:
 					this.getNew(subTabIndex);
-					
+
 					let invalidateTimeout = Mainloop.timeout_add(1000 * 60 * 2, Lang.bind(this, function() {
 						this.categories[0].apps = [];
 
@@ -70,90 +71,88 @@ const FilesView = new Lang.Class({
 					break;
 			}
 		}
-
-		this.emit("contents-changed");
 	},
 
 	getNew: function(subTabIndex) {
-		let subject = new Zeitgeist.Subject("file://*", "", "", "", "", "", "");
-		let template = new Zeitgeist.Event("http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
+		if (Zeitgeist.available) {
+			let subject = new Zeitgeist.Subject("file://*", "", "", "", "", "", "");
+			let template = new Zeitgeist.Event("http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#CreateEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
 
-		let end = new Date().getTime();
-		let start = end - 86400000 * 365; // 1 year
+			let end = new Date().getTime();
+			let start = end - 86400000 * 365; // 1 year
 
-		Zeitgeist.findEvents([start, end]
-			, [template]
-			, Zeitgeist.StorageState.ANY
-			, MAX_ITEMS
-			, Zeitgeist.ResultType.MOST_RECENT_SUBJECTS
-			, Lang.bind(this, function(events, error) {
-				let apps = [];
+			Zeitgeist.findEvents([start, end]
+				, [template]
+				, Zeitgeist.StorageState.ANY
+				, MAX_ITEMS
+				, Zeitgeist.ResultType.MOST_RECENT_SUBJECTS
+				, Lang.bind(this, function(events, error) {
+					let apps = [];
 
-				for (let i = 0, count = events.length; i < count; i++) {
-					let event = events[i];
-					let subject = event.subjects[0];
-					let uri = GLib.uri_unescape_string(subject.uri, "");
+					for (let i = 0, count = events.length; i < count; i++) {
+						let event = events[i];
+						let subject = event.subjects[0];
+						let uri = GLib.uri_unescape_string(subject.uri, "");
 
-					if (GLib.file_test(uri.replace("file://", ""), GLib.FileTest.EXISTS)) {
-						let name = subject.text;
-						let icon = null; // let the thumbnail generator decide based on the mimetype
-						let mimeType = subject.mimetype;
-						let launch = function() {
-							Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
+						if (GLib.file_test(uri.replace("file://", ""), GLib.FileTest.EXISTS)) {
+							let name = subject.text;
+							let icon = null; // let the thumbnail generator decide based on the mimetype
+							let mimeType = subject.mimetype;
+							let launch = function() {
+								Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
+							}
+
+							let app = new MockShellApp.MockShellApp(uri, name, icon, launch, uri, mimeType);
+							apps.push(app);
 						}
-
-						let app = new MockShellApp.MockShellApp(uri, name, icon, launch, uri, mimeType);
-						apps.push(app);
 					}
-				}
 
-				this.categories[subTabIndex].apps = apps;
-				this.renderApps(this.appIconGrids[subTabIndex], apps);
-
-				this.emit("contents-changed");
-			})
-		);
+					this.categories[subTabIndex].apps = apps;
+					this.renderApps(this.appIconGrids[subTabIndex], apps);
+				})
+			);
+		}
 	},
 
 	getPopular: function(subTabIndex) {
-		let subject = new Zeitgeist.Subject("file://*", "", "", "", "", "", "");
-		let template = new Zeitgeist.Event("!http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#DeleteEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
+		if (Zeitgeist.available) {
+			let subject = new Zeitgeist.Subject("file://*", "", "", "", "", "", "");
+			let template = new Zeitgeist.Event("!http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#DeleteEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
 
-		let end = new Date().getTime();
-		let start = end - 86400000 * 365; // 1 year
+			let end = new Date().getTime();
+			let start = end - 86400000 * 365; // 1 year
 
-		Zeitgeist.findEvents([start, end]
-			, [template]
-			, Zeitgeist.StorageState.ANY
-			, MAX_ITEMS
-			, Zeitgeist.ResultType.MOST_POPULAR_SUBJECTS
-			, Lang.bind(this, function(events, error) {
-				let apps = [];
+			Zeitgeist.findEvents([start, end]
+				, [template]
+				, Zeitgeist.StorageState.ANY
+				, MAX_ITEMS
+				, Zeitgeist.ResultType.MOST_POPULAR_SUBJECTS
+				, Lang.bind(this, function(events, error) {
+					let apps = [];
 
-				for (let i = 0, count = events.length; i < count; i++) {
-					let event = events[i];
-					let subject = event.subjects[0];
-					let uri = GLib.uri_unescape_string(subject.uri, "");
+					for (let i = 0, count = events.length; i < count; i++) {
+						let event = events[i];
+						let subject = event.subjects[0];
+						let uri = GLib.uri_unescape_string(subject.uri, "");
 
-					if (GLib.file_test(uri.replace("file://", ""), GLib.FileTest.EXISTS)) {
-						let name = subject.text;
-						let icon = null; // let the thumbnail generator decide based on the mimetype
-						let mimeType = subject.mimetype;
-						let launch = function() {
-							Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
+						if (GLib.file_test(uri.replace("file://", ""), GLib.FileTest.EXISTS)) {
+							let name = subject.text;
+							let icon = null; // let the thumbnail generator decide based on the mimetype
+							let mimeType = subject.mimetype;
+							let launch = function() {
+								Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context());
+							}
+
+							let app = new MockShellApp.MockShellApp(uri, name, icon, launch, uri, mimeType);
+							apps.push(app);
 						}
-
-						let app = new MockShellApp.MockShellApp(uri, name, icon, launch, uri, mimeType);
-						apps.push(app);
 					}
-				}
 
-				this.categories[subTabIndex].apps = apps;
-				this.renderApps(this.appIconGrids[subTabIndex], apps);
-
-				this.emit("contents-changed");
-			})
-		);
+					this.categories[subTabIndex].apps = apps;
+					this.renderApps(this.appIconGrids[subTabIndex], apps);
+				})
+			);
+		}
 	},
 
 	getPlaces: function(subTabIndex) {
@@ -172,7 +171,7 @@ const FilesView = new Lang.Class({
 				let mountIcon = places[i]._mount.get_icon();
 
 				icon = function(size) {
-        			return St.TextureCache.get_default().load_gicon(null, mountIcon, size);
+					return St.TextureCache.get_default().load_gicon(null, mountIcon, size);
 				}
 				launch = function(params) {
 					Gio.app_info_launch_default_for_uri(mountUri, global.create_app_launch_context());
@@ -188,8 +187,6 @@ const FilesView = new Lang.Class({
 
 		this.categories[subTabIndex].apps = apps;
 		this.renderApps(this.appIconGrids[subTabIndex], apps);
-
-		this.emit("contents-changed");
 	},
 
 	destroy: function() {
@@ -197,4 +194,3 @@ const FilesView = new Lang.Class({
 		this.parent();
 	}
 });
-Signals.addSignalMethods(FilesView.prototype);

@@ -28,7 +28,6 @@ const SearchView = new Lang.Class({
 
 		this.bolt = bolt;
 		this.searchTerms = "";
-		this.searchIcon = null;
 		this.searchTimeout = 0;
 		this.blockTextChangeEvents = false;
 
@@ -52,11 +51,11 @@ const SearchView = new Lang.Class({
 
 			 this.text.has_style_class_name = Lang.bind(this, function(className){ return this.entry.has_style_class_name(className); }); // required as you can sometimes click on the text and a Bolt::selectTab event occurs
 
-			this.searchIcon = new St.Icon({style_class: "search-entry-icon"
+			this.searchEntryIcon = new St.Icon({style_class: "search-entry-icon"
 				, icon_name: "edit-find"
 				, icon_type: St.IconType.SYMBOLIC
 			});
-			this.entry.set_secondary_icon(this.searchIcon);
+			this.entry.set_secondary_icon(this.searchEntryIcon);
 
 		this.noResults = new St.BoxLayout({style_class: "notice"
 			, vertical: true
@@ -223,13 +222,6 @@ const SearchView = new Lang.Class({
 
 			if (firstSection && firstSection !== this.noResults) {
 				this.noResults.hide();
-
-				if (this.searchIcon) {
-					this.searchIcon.remove_style_pseudo_class("focus");
-				}
-
-				this.searchIcon = this.getFirstSearchResult();
-				this.searchIcon.add_style_pseudo_class("focus");
 			} else if (this.searches === 0) {
 				this.noResults.show();
 			}

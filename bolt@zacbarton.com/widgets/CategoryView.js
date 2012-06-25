@@ -2,13 +2,12 @@ const St = imports.gi.St;
 const Lang = imports.lang;
 const Gtk = imports.gi.Gtk;
 const Pango = imports.gi.Pango;
-const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
-const IconGrid = imports.ui.iconGrid;
 
 const Extension = imports.misc.extensionUtils.getBoltExtension();
 const Utils = Extension.imports.libs.Utils;
 
+const IconGrid = Extension.imports.widgets.IconGrid;
 const Icon = Extension.imports.widgets.Icon;
 
 const SCROLL_TIME = 0.1;
@@ -18,7 +17,6 @@ const CategoryView = new Lang.Class({
 
 	_init: function(tabLabel) {
 		this.iconCache = {};
-		this.contentsChanged = false;
 
 		this.tab = new St.Bin({style_class: "tab"
 			, x_fill: true
@@ -31,13 +29,13 @@ const CategoryView = new Lang.Class({
 		Utils.addExtraCssSupport(this.tab);
 		this.tab.delegate = this;
 
-		this.panel = new St.BoxLayout({style_class: "panel"
+		this.panel = new St.BoxLayout({style_class: "panel categoryView"
 			, vertical: true
 			, visible: false
 			, reactive: false
 		});
 
-			this.subTabs = new St.BoxLayout({style_class: "tabs"
+			this.subTabs = new St.BoxLayout({style_class: "categories"
 				, visible: true
 				, reactive: true
 			});
@@ -55,19 +53,16 @@ const CategoryView = new Lang.Class({
 			this.panel.add(this.subPanelScroll, {expand: true, y_fill: true}); // only add with options!
 
 				this.appIconGrid = new IconGrid.IconGrid();
+				Utils.addExtraCssSupport(this.appIconGrid.actor);
 				this.subPanelScroll.add_actor(this.appIconGrid.actor);
 
 		global.focus_manager.add_group(this.subTabs);
 		global.focus_manager.add_group(this.appIconGrid.actor);
-
-		this.connect("contents-changed", Lang.bind(this, function() {
-			this.contentsChanged = true;
-		}));
 	},
 
 	renderApps: function(appIconGrid, apps) {
 		appIconGrid.actor.get_first_child().remove_all_children();
-		
+
 		for (let i = 0, count = apps.length; i < count; i++) {
 			let id = apps[i].get_id();
 
@@ -102,7 +97,7 @@ const CategoryView = new Lang.Class({
 
 		switch (direction) {
 			case Gtk.DirectionType.UP:
-				if (parentActor.get_parent().has_style_class_name("icon-grid")) {
+				if (parentActor.get_parent().has_style_class_name("iconGrid")) {
 					this.focusOnSelectedSubTab();
 				} else if (parentActor == this.subTabs) {
 					this.tab.grab_key_focus();
@@ -141,19 +136,14 @@ const CategoryView = new Lang.Class({
 			, transition: "easeOutQuad"
 		});
 	},
-	
+
 	setScrollbarVisibility: function(adjustment) {
-		if (this.contentsChanged) {
-			let [value, lower, upper, stepIncrement, pageIncrement, pageSize] = adjustment.get_values();
+		let [value, lower, upper, stepIncrement, pageIncrement, pageSize] = adjustment.get_values();
 
-			if (upper <= pageSize) {
-				this.subPanelScroll.vscroll.set_opacity(0);
-			} else {
-				this.subPanelScroll.vscroll.set_opacity(255);
-			}
-
-			this.contentsChanged = false;
+		if (upper <= pageSize) {
+			this.subPanelScroll.vscroll.set_opacity(0);
+		} else {
+			this.subPanelScroll.vscroll.set_opacity(255);
 		}
 	}
 });
-Signals.addSignalMethods(CategoryView.prototype);

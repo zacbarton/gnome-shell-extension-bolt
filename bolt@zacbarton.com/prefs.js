@@ -12,30 +12,29 @@ try {
 } catch(e) {}
 
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
+
 const Settings = Extension.imports.libs.Settings;
+const Zeitgeist = Extension.imports.libs.Zeitgeist;
 
 // FIXME complete overhaul
-// TODO
-// activities - change text, use icon, use distro icon, icon + text, none
-// icons - sizing, spacing
-
 function init() {
-   
+	
 }
 
 function buildPrefsWidget() {
 	this.settings = Settings.getSettings(Extension);
 
-	let frame = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL,
+	let scroll = new Gtk.ScrolledWindow();
+
+	let frame = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL,
 		border_width: 10
 		, expand: true
 	});
 	frame.set_spacing(6);
 
-
 	let general = new Gtk.Label({label: "<b>General</b>", use_markup: true, xalign: 0});
 		let vbox3 = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, margin_left: 20});
-			let label31= new Gtk.CheckButton({label: "Show instantly"});
+			let label31 = new Gtk.CheckButton({label: "Show instantly"});
 			label31.set_active(this.settings.get_double(Settings.SHOW_ANIMATION_TIME) === 0);
 			label31.connect("toggled", Lang.bind(this, function(check){
 				this.settings.set_double(Settings.SHOW_ANIMATION_TIME, check.get_active() ? 0 : .175);
@@ -44,6 +43,11 @@ function buildPrefsWidget() {
 			label32.set_active(this.settings.get_boolean(Settings.ALWAYS_OPEN_TO_HOME));
 			label32.connect("toggled", Lang.bind(this, function(check){
 				this.settings.set_boolean(Settings.ALWAYS_OPEN_TO_HOME, check.get_active());
+			}));
+			let label37 = new Gtk.CheckButton({label: "Change activities text"});
+			label37.set_active(this.settings.get_boolean(Settings.CHANGE_ACTIVITIES_TEXT));
+			label37.connect("toggled", Lang.bind(this, function(check){
+				this.settings.set_boolean(Settings.CHANGE_ACTIVITIES_TEXT, check.get_active());
 			}));
 			let label11 = new Gtk.CheckButton({label: "Blur overlapping windows"});
 			label11.set_active(this.settings.get_boolean(Settings.BLUR_BACKGROUND));
@@ -76,32 +80,49 @@ function buildPrefsWidget() {
 			let hbox31 = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, margin_top: 0, margin_left: 0});
 				let label30 = new Gtk.Button({label: "Edit application & system categories"});
 				label30.connect("clicked", function(button){
-				  GLib.spawn_command_line_sync("alacarte");
+					GLib.spawn_command_line_sync("alacarte");
 				});
+				if (GLib.spawn_command_line_sync("which alacarte")[1].toString().indexOf("alacarte") === -1) {
+					label30.set_sensitive(false);
+					label30.set_tooltip_text("Install alacarte to use");
+				}
 
 	let home = new Gtk.Label({label: "<b>Home tab</b>", use_markup: true, xalign: 0});
 		let vbox4 = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, margin_left: 20});
-			let label421 =  new Gtk.RadioButton({label: "Show recent applications"});
+			let label421 = new Gtk.RadioButton({label: "Show recent applications"});
 			label421.set_active(this.settings.get_string(Settings.HOME_APPLICATIONS_TYPE) === "recent");
 			label421.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
 					this.settings.set_string(Settings.HOME_APPLICATIONS_TYPE, "recent");
+				}
 			}));
-			let label422 =  new Gtk.RadioButton({label: "Show popular applications", group: label421});
+			let label422 = new Gtk.RadioButton({label: "Show popular applications", group: label421});
 			label422.set_active(this.settings.get_string(Settings.HOME_APPLICATIONS_TYPE) === "popular");
 			label422.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
 					this.settings.set_string(Settings.HOME_APPLICATIONS_TYPE, "popular");
+				}
 			}));
-			let label423 =  new Gtk.RadioButton({label: "Show favorite applications", group: label421});
+			let label423 = new Gtk.RadioButton({label: "Show favorite applications", group: label421});
 			label423.set_active(this.settings.get_string(Settings.HOME_APPLICATIONS_TYPE) === "favorite");
 			label423.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
 					this.settings.set_string(Settings.HOME_APPLICATIONS_TYPE, "favorite");
+				}
 			}));
-			let label43= new Gtk.CheckButton({label: "Show recent files"});
+			let label424 = new Gtk.RadioButton({label: "Show running applications", group: label421});
+			label424.set_active(this.settings.get_string(Settings.HOME_APPLICATIONS_TYPE) === "running");
+			label424.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
+					this.settings.set_string(Settings.HOME_APPLICATIONS_TYPE, "running");
+				}
+			}));
+			let label43 = new Gtk.CheckButton({label: "Show recent files"});
 			label43.set_active(this.settings.get_boolean(Settings.HOME_SHOW_RECENT_FILES));
 			label43.connect("toggled", Lang.bind(this, function(check){
 				this.settings.set_boolean(Settings.HOME_SHOW_RECENT_FILES, check.get_active());
 			}));
-			let label44= new Gtk.CheckButton({label: "Show downloads"});
+			let label44 = new Gtk.CheckButton({label: "Show downloads"});
 			label44.set_active(this.settings.get_boolean(Settings.HOME_SHOW_DOWNLOADS));
 			label44.connect("toggled", Lang.bind(this, function(check){
 				this.settings.set_boolean(Settings.HOME_SHOW_DOWNLOADS, check.get_active());
@@ -120,16 +141,40 @@ function buildPrefsWidget() {
 				this.settings.set_boolean(Settings.SEARCH_CONTACTS, check.get_active());
 			}));
 
+	let themeSize = new Gtk.Label({label: "<b>Theme size</b> <small><i>(requires theme support)</i></small>", use_markup: true, xalign: 0});
+		let vbox17 = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, margin_left: 20});
+			let label171 = new Gtk.RadioButton({label: "Large"});
+			label171.set_active(this.settings.get_string(Settings.THEME_SIZE) === "large");
+			label171.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
+					this.settings.set_string(Settings.THEME_SIZE, "large");
+				}
+			}));
+			let label172 = new Gtk.RadioButton({label: "Medium", group: label171});
+			label172.set_active(this.settings.get_string(Settings.THEME_SIZE) === "medium");
+			label172.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
+					this.settings.set_string(Settings.THEME_SIZE, "medium");
+				}
+			}));
+			let label173 = new Gtk.RadioButton({label: "Small", group: label171});
+			label173.set_active(this.settings.get_string(Settings.THEME_SIZE) === "small");
+			label173.connect("toggled", Lang.bind(this, function(check){
+				if (check.get_active()) {
+					this.settings.set_string(Settings.THEME_SIZE, "small");
+				}
+			}));
+
 	let theme = new Gtk.Label({label: "<b>Default Theme</b>", use_markup: true, xalign: 0});
 		let vbox1 = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, margin_left: 20});
-			let label12 =  new Gtk.RadioButton({label: "Match wallpaper color"});
+			let label12 = new Gtk.RadioButton({label: "Match wallpaper color"});
 			label12.set_active(this.settings.get_boolean(Settings.MATCH_WALLPAPER));
 			label12.connect("toggled", Lang.bind(this, function(check){
 				this.settings.set_boolean(Settings.MATCH_WALLPAPER, check.get_active());
 			}));
 
 			let hbox11 = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, margin_top: 0, margin_left: 0});
-				let custom11 =  new Gtk.RadioButton({label: "Custom color", group: label12});
+				let custom11 = new Gtk.RadioButton({label: "Custom color", group: label12});
 				custom11.set_active(!this.settings.get_boolean(Settings.MATCH_WALLPAPER));
 				custom11.connect("toggled", function(button) {
 					picker11.set_sensitive(button.get_active());
@@ -151,13 +196,13 @@ function buildPrefsWidget() {
 
 	let sizing = new Gtk.Label({label: "<b>Sizing</b>", use_markup: true, xalign: 0});
 		let vbox2 = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, margin_left: 20});
-			let label21 =  new Gtk.RadioButton({label: "Automattic"});
+			let label21 = new Gtk.RadioButton({label: "Automattic"});
 			label21.set_active(this.settings.get_boolean(Settings.AUTOMATTIC_SIZING));
 			label21.connect("toggled", Lang.bind(this, function(check){
 					this.settings.set_boolean(Settings.AUTOMATTIC_SIZING, check.get_active());
 			}));
 			let hbox21 = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL, margin_top: 0, margin_left: 0});
-				let custom21 =  new Gtk.RadioButton({label: "Custom", group: label21});
+				let custom21 = new Gtk.RadioButton({label: "Custom", group: label21});
 				custom21.set_active(!this.settings.get_boolean(Settings.AUTOMATTIC_SIZING));
 				custom21.connect("toggled", function(button) {
 					spin21.set_sensitive(button.get_active());
@@ -186,18 +231,24 @@ function buildPrefsWidget() {
 						this.settings.set_string(Settings.CUSTOM_SIZE, s);
 					}));
 
-	if (!thumbnail_factory) {
+	if (!Zeitgeist.available || !thumbnail_factory) {
 		let infoBar = new Gtk.InfoBar({margin_bottom: 10});
-			let thumbnailNotice = new Gtk.Label({label: "To see previews of some files install <b>gir1.2-gnomedesktop-3.0</b> and relogin.", use_markup: true, xalign: 0});
+			let notice;
+			if (!Zeitgeist.available) {
+				notice = new Gtk.Label({label: "Please install zeitgeist and relogin.", use_markup: true, xalign: 0});
+			} else {
+				notice = new Gtk.Label({label: "To see previews of some files install <b>gir1.2-gnomedesktop-3.0</b> and relogin.", use_markup: true, xalign: 0});
+			}
 
 		frame.add(infoBar);
-			infoBar.get_content_area().add(thumbnailNotice);
+			infoBar.get_content_area().add(notice);
 	}
 
 	frame.add(general);
 		frame.add(vbox3);
 			vbox3.add(label31);
 			vbox3.add(label32);
+			vbox3.add(label37);
 			vbox3.add(label11);
 
 	frame.add(tabs);
@@ -214,6 +265,7 @@ function buildPrefsWidget() {
 			vbox4.add(label421);
 			vbox4.add(label422);
 			vbox4.add(label423);
+			vbox4.add(label424);
 			vbox4.add(label43);
 			vbox4.add(label44);
 
@@ -221,6 +273,12 @@ function buildPrefsWidget() {
 		frame.add(vbox5);
 			vbox5.add(label53);
 			vbox5.add(label54);
+
+	frame.add(themeSize);
+		frame.add(vbox17);
+			vbox17.add(label171);
+			vbox17.add(label172);
+			vbox17.add(label173);
 
 	frame.add(theme);
 		frame.add(vbox1);
@@ -236,11 +294,14 @@ function buildPrefsWidget() {
 				hbox21.add(custom21);
 				hbox21.add(spin21);
 				hbox21.add(x21);
-				hbox21.add(spin22);
+				hbox21.add(spin22);	
 
 	let donate = new Gtk.Label({label: "<a href='https://flattr.com/thing/668930'>Donate to this project</a>", use_markup: true, xalign: 0, margin_top: 20});
 	frame.add(donate);
 
 	frame.show_all();
-	return frame;
+	scroll.show_all();
+	scroll.add_with_viewport(frame);
+	
+	return scroll;
 }

@@ -1,14 +1,13 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Pango = imports.gi.Pango;
-const Signals = imports.signals;
 const Clutter = imports.gi.Clutter;
-const IconGrid = imports.ui.iconGrid;
 
 const Extension = imports.misc.extensionUtils.getBoltExtension();
 const Utils = Extension.imports.libs.Utils;
 
 const CategoryView = Extension.imports.widgets.CategoryView;
+const IconGrid = Extension.imports.widgets.IconGrid;
 const Waiting = Extension.imports.widgets.Waiting;
 
 const CategoryViewStacked = new Lang.Class({
@@ -34,7 +33,7 @@ const CategoryViewStacked = new Lang.Class({
 		this.appIconGrids = [];
 
 		for (let i = 0; i < this.categories.length; i++) {
-			let tab = new St.Bin({style_class: "tab"
+			let tab = new St.Bin({style_class: "category"
 				, x_fill: true
 				, reactive: true
 				, can_focus: true
@@ -51,7 +50,7 @@ const CategoryViewStacked = new Lang.Class({
 
 			this.subTabs.add_actor(tab);
 
-			let appIconGrid = new IconGrid.IconGrid();
+			let appIconGrid = new IconGrid.IconGrid({}, i === 0);
 			this.appIconGridContainer.add_actor(appIconGrid.actor);
 
 				this.waiting = new Waiting.Waiting("", true);
@@ -104,4 +103,3 @@ const CategoryViewStacked = new Lang.Class({
 		this.panel.destroy();
 	}
 });
-Signals.addSignalMethods(CategoryViewStacked.prototype);

@@ -39,18 +39,18 @@ const OverviewOverride = new Lang.Class({
 	override: function() {
 		this.overrides.show = this.add(Overview.Overview.prototype, "show", Lang.bind(this, function() {
 			this.bolt.show();
-			Main.overview._shown = true;
-			Main.overview.visible = true;
+			Main.overview._shown = this.bolt.actor.visible;
+			Main.overview.visible = this.bolt.actor.visible;
 		}));
 		this.overrides.hide = this.add(Overview.Overview.prototype, "hide", Lang.bind(this, function() {
 			this.bolt.hide();
-			Main.overview._shown = false;
-			Main.overview.visible = false;
+			Main.overview._shown = this.bolt.actor.visible;
+			Main.overview.visible = this.bolt.actor.visible;
 		}));
 		this.overrides.toggle = this.add(Overview.Overview.prototype, "toggle", Lang.bind(this, function() {
 			this.bolt.toggle();
-			Main.overview._shown = !Main.overview._shown;
-			Main.overview.visible = !Main.overview.visible;
+			Main.overview._shown = this.bolt.actor.visible;
+			Main.overview.visible = this.bolt.actor.visible;
 		}));
 	},
 

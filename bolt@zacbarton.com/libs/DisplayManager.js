@@ -4,8 +4,8 @@ const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
 const Tweener = imports.ui.tweener;
 
-const Animator = new Lang.Class({
-	Name: "Animator",
+const DisplayManager = new Lang.Class({
+	Name: "DisplayManager",
 
 	_init: function(bolt) {
 		this.bolt = bolt;
@@ -16,12 +16,13 @@ const Animator = new Lang.Class({
 	},
 
 	show: function() {
-		if (this.bolt.container.visible) {
+		if (this.bolt.actor.visible) {
 			return;
 		}
 
 		this.bolt.keyboardManager.captureKeys(true);
 
+		Main.overview.emit("bolt-showing", this.showAnimationTime);
 		this.beforeShow();
 
 		this.bolt.coverPane.show();
@@ -32,76 +33,53 @@ const Animator = new Lang.Class({
 		}
 
 		if (this.showAnimationTime === 0) {
-			if (this.bolt.blur.enabled) {
-				this.bolt.blur.actor.show();
-			}
-
-			this.bolt.container.show();
+			this.bolt.actor.show();
+			this.afterShow();
+			Main.overview.emit("bolt-shown");
 		} else {
-			if (this.bolt.blur.enabled) {
-				Tweener.removeTweens(this.bolt.blur.actor);
+			Tweener.removeTweens(this.bolt.actor);
 
-				this.bolt.blur.actor.opacity = 0;
-				this.bolt.blur.actor.show();
-				Tweener.addTween(this.bolt.blur.actor, {time: this.showAnimationTime
-					, opacity: 255
-					, transition: "easeOutQuad"
-				});
-			}
-
-			Tweener.removeTweens(this.bolt.container);
-
-			this.bolt.container.opacity = 0;
-			this.bolt.container.show();
-			Tweener.addTween(this.bolt.container, {time: this.showAnimationTime
+			this.bolt.actor.opacity = 0;
+			this.bolt.actor.show();
+			Tweener.addTween(this.bolt.actor, {time: this.showAnimationTime
 				, opacity: 255
 				, transition: "easeOutQuad"
+				, onComplete: Lang.bind(this, function() {
+					this.afterShow();
+					Main.overview.emit("bolt-shown");
+				})
 			});
 		}
 	},
 
 	hide: function() {
-		if (!this.bolt.container.visible) {
+		if (!this.bolt.actor.visible) {
 			return;
 		}
 
 		this.bolt.keyboardManager.captureKeys(false);
 
+		Main.overview.emit("bolt-hiding", this.showAnimationTime);
 		this.beforeHide();
 
 		this.bolt.coverPane.hide();
 		this.destroyOutsideClickHandler();
 
 		if (this.showAnimationTime === 0) {
-			if (this.bolt.blur.enabled) {
-				this.bolt.blur.actor.hide();
-			}
-
-			this.bolt.container.hide();
+			this.bolt.actor.hide();
 			this.afterHide();
+			Main.overview.emit("bolt-hidden");
 		} else {
-			if (this.bolt.blur.enabled) {
-				Tweener.removeTweens(this.bolt.blur.actor);
+			Tweener.removeTweens(this.bolt.actor);
 
-				Tweener.addTween(this.bolt.blur.actor, {time: this.showAnimationTime
-					, opacity: 0
-					, transition: "easeOutQuad"
-					, onComplete: Lang.bind(this, function() {
-						this.bolt.blur.hide();
-						this.bolt.blur.actor.opacity = 255;
-					})
-				});
-			}
-
-			Tweener.removeTweens(this.bolt.container);
-
-			Tweener.addTween(this.bolt.container, {time: this.showAnimationTime
+			Tweener.addTween(this.bolt.actor, {time: this.showAnimationTime
 				, opacity: 0
 				, transition: "easeOutQuad"
 				, onComplete: Lang.bind(this, function() {
-					this.bolt.container.hide();
-					this.bolt.container.opacity = 255;
+					this.bolt.actor.hide();
+					this.bolt.actor.opacity = 255;
 					this.afterHide();
+					Main.overview.emit("bolt-hidden");
 				})
 			});
 		}
@@ -134,7 +112,7 @@ const Animator = new Lang.Class({
 		this.lastKeyFocus = global.stage.get_key_focus();
 
 		// mostly copied from Main::pushModal but without "global.stage.set_key_focus(actor);" as it slows down showing considerably
-		let actor = this.bolt.container;
+		let actor = this.bolt.actor;
 		let timestamp = global.get_current_time();
 
 		if (Main.modalCount == 0) {
@@ -169,10 +147,42 @@ const Animator = new Lang.Class({
 			, destroyId: actorDestroyId
 			, focusDestroyId: curFocusDestroyId
 		});
+
+		// hide the active application icon
+		Main.panel._appMenu.actor.hide();
+	},
+
+	afterShow: function() {
+		if (this.bolt.isPopup === true) {
+			this.bolt.boxPointer.setPosition(Main.panel._activitiesButton.actor, 0);
+
+			this.bolt.boxPointer.actor.x = this.bolt.boxPointer._xPosition;
+			this.bolt.boxPointer.actor.y = this.bolt.boxPointer._yPosition;
+
+			let boxPointerThemeNode = this.bolt.boxPointer.actor.peek_theme_node();
+
+			if (boxPointerThemeNode) {
+				let arrowRise = boxPointerThemeNode.get_length("-arrow-rise");
+				let borderWidth = boxPointerThemeNode.get_length("-arrow-border-width");
+
+				this.bolt.blur.actor.x = borderWidth;
+				this.bolt.blur.actor.y = arrowRise + borderWidth;
+			}
+		} else {
+			this.bolt.boxPointer.actor.x = Main.layoutManager.panelBox.x;
+			this.bolt.boxPointer.actor.y = Main.layoutManager.panelBox.y + Main.layoutManager.panelBox.height;
+
+			this.bolt.blur.actor.x = 0;
+			this.bolt.blur.actor.y = 0;
+		}
+
+		if (this.bolt.blur.enabled) {
+			this.bolt.blur.setPorthole();
+		}
 	},
 
 	beforeHide: function() {
-		Main.popModal(this.bolt.container);
+		Main.popModal(this.bolt.actor);
 
 		global.stage.set_key_focus(null);
 	},
@@ -186,5 +196,8 @@ const Animator = new Lang.Class({
 			global.stage.set_key_focus(this.lastKeyFocus);
 			this.lastKeyFocus = 0;
 		}
+
+		// re-show the active application icon
+		Main.panel._appMenu.actor.show();
 	}
 });

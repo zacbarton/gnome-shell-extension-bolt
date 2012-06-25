@@ -119,13 +119,13 @@ Signals.addSignalMethods(BackgroundMatcher.prototype);
 function RGBtoHSV(rgb) {
 	let mini, maxi, delta, h, s, v;
 	let [r, g, b] = rgb
-	
+
 	mini = Math.min(r, g, b);
 	maxi = Math.max(r, g, b);
 	v = maxi;
-	
+
 	delta = maxi - mini;
-	
+
 	if (maxi != 0) {
 		s = delta / maxi;
 	} else {
@@ -133,13 +133,13 @@ function RGBtoHSV(rgb) {
 		h = -1;
 		return {hue: h, saturation: s, value: v};
 	}
-	
+
 	if (delta == 0) {
 		h = 0;
 		s = 0;
 		return {hue: h, saturation: s, value: v};
 	}
-	
+
 	if (r == maxi) {
 		h = (g - b) / delta;      // between yellow & magenta
 	} else if (g == maxi) {
@@ -147,35 +147,35 @@ function RGBtoHSV(rgb) {
 	} else {
 		h = 4 + (r - g) / delta;  // between magenta & cyan
 	}
-	
+
 	h *= 60;  // degrees
 
 	if (h < 0) {
 		h += 360;
 	}
-	
+
 	// convert h from [0, 360] to [0, 1]
 	h = h / 360.0;
-	
+
 	return {hue: h, saturation: s, value: v};
 }
 
 function HSVtoRGB(hsv) {
 	let r, g, b, i, f, p, q, t;
 	let [h, s, v] = [hsv.hue, hsv.saturation, hsv.value];
-	
+
 	// convert h from [0, 1] to [0, 360]
 	h = h * 360.0;
-	
+
 	if (s == 0) {
 		// achromatic (grey)
 		r = g = b = v;
 		return [r, g, b];
 	}
-	
-	h /= 60.0;         // sector 0 to 5
+
+	h /= 60.0; // sector 0 to 5
 	i = Math.floor(h);
-	f = h - i;          // factorial part of h
+	f = h - i; // factorial part of h
 	p = v * (1 - s);
 	q = v * (1 - s * f);
 	t = v * (1 - s * (1 - f));
@@ -212,6 +212,6 @@ function HSVtoRGB(hsv) {
 			b = q;
 			break;
 	}
-	
+
 	return [r, g, b];
 }

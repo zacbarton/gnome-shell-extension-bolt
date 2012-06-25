@@ -41,8 +41,6 @@ const ContactsView = new Lang.Class({
 						this.bolt.hide();
 					}));
 					this.notice.add(this.button, {x_align: St.Align.MIDDLE, x_fill: false, y_align: St.Align.MIDDLE, y_fill: false, expand: true});
-
-				this.emit("contents-changed");
 			} else {
 				// hide All and show the next category, probably A
 				// all is actually required so that the data/categories are in the same format as other CategoryViewFiltered views

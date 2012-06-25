@@ -4,10 +4,11 @@ const Gtk = imports.gi.Gtk;
 const Pango = imports.gi.Pango;
 const Clutter = imports.gi.Clutter;
 const Tweener = imports.ui.tweener;
-const IconGrid = imports.ui.iconGrid;
 
 const Extension = imports.misc.extensionUtils.getBoltExtension();
 const Utils = Extension.imports.libs.Utils;
+
+const IconGrid = Extension.imports.widgets.IconGrid;
 const Icon = Extension.imports.widgets.Icon;
 
 const SCROLL_TIME = 0.1;
@@ -21,7 +22,7 @@ const SectionView = new Lang.Class({
 
 	_init: function(tabLabel, sections, visible) {
 		this.iconCache = {};
-		
+
 		this.tab = new St.Bin({style_class: "tab"
 			, x_fill: true
 			, reactive: true
@@ -33,7 +34,7 @@ const SectionView = new Lang.Class({
 		Utils.addExtraCssSupport(this.tab);
 		this.tab.delegate = this;
 
-		this.panelScroll = new St.ScrollView({style_class: "panelScroll vfade"
+		this.panelScroll = new St.ScrollView({style_class: "panelScroll vfade sectionView"
 			, x_fill: true
 			, y_fill: true
 			, visible: false
@@ -41,11 +42,10 @@ const SectionView = new Lang.Class({
 			, hscrollbar_policy: Gtk.PolicyType.NEVER
 			, vscrollbar_policy: Gtk.PolicyType.ALWAYS
 		});
-		this.panelScroll.vscroll.adjustment.connect("changed", Lang.bind(this, this.setScrollbarVisibility)); // FIXME dont update when just scrolling
+		this.panelScroll.vscroll.adjustment.connect("changed", Lang.bind(this, this.setScrollbarVisibility));
 		Utils.addExtraCssSupport(this.panelScroll);
 
-			this.panel = new St.BoxLayout({name: "panel" // NEEDED!
-				, style_class: "panel"
+			this.panel = new St.BoxLayout({style_class: "panel"
 				, vertical: true
 				, visible: true
 				, reactive: false
@@ -58,14 +58,14 @@ const SectionView = new Lang.Class({
 				for (let i = 0; i < sections.length; i++) {
 					let section = sections[i];
 
-					let subTabs = new St.BoxLayout({style_class: "tabs"
+					let subTabs = new St.BoxLayout({style_class: "categories"
 						, visible: visible
 						, reactive: false
 					});
 					Utils.addExtraCssSupport(subTabs);
 					this.panel.add_actor(subTabs);
 
-						let tab = new St.BoxLayout({style_class: "tab"
+						let tab = new St.BoxLayout({style_class: "category"
 							, visible: true
 							, reactive: true
 							, can_focus: true
@@ -85,12 +85,9 @@ const SectionView = new Lang.Class({
 							tab.textRight.rotation_center_z_gravity = Clutter.Gravity.NONE;
 							tab.add_actor(tab.textRight);
 
-					let appIconGrid = new IconGrid.IconGrid({rowLimit: 1});
-					if (!visible) {
-						appIconGrid.actor.hide();
-					}
-					this.panel.add_actor(appIconGrid.actor);
+					let appIconGrid = new IconGrid.IconGrid({rowLimit: 1}, visible);
 					Utils.addExtraCssSupport(appIconGrid.actor);
+					this.panel.add_actor(appIconGrid.actor);
 
 					global.focus_manager.add_group(subTabs);
 					global.focus_manager.add_group(appIconGrid.actor);
@@ -132,10 +129,15 @@ const SectionView = new Lang.Class({
 			appIconGrid.actor.show();
 
 			if (this.bolt.iconsPerRow < apps.length) {
-				subTab.get_first_child().textCenter.text = SEE_MORE.replace("xx", apps.length - this.bolt.iconsPerRow);
-				subTab.get_first_child().textCenter.show();
+				if (appIconGrid._rowLimit === 1) {
+					subTab.get_first_child().textCenter.text = SEE_MORE.replace("xx", apps.length - this.bolt.iconsPerRow);
+					subTab.get_first_child().textRight.text = "\u25B8";
+				} else {
+					subTab.get_first_child().textCenter.text = SEE_LESS;
+					subTab.get_first_child().textRight.text = "\u25BE";
+				}
 
-				subTab.get_first_child().textRight.text = "\u25B8";
+				subTab.get_first_child().textCenter.show();
 				subTab.get_first_child().textRight.show();
 			} else {
 				subTab.get_first_child().textCenter.hide();
@@ -154,7 +156,7 @@ const SectionView = new Lang.Class({
 		// will be needs_allocation, and so "icon.y" would return 0
 		let box = actor.get_allocation_box();
 
-		if (parentActor.get_parent().has_style_class_name("icon-grid")) {
+		if (parentActor.get_parent().has_style_class_name("iconGrid")) {
 			box.y1 += parentActor.get_parent().get_allocation_box().y1;
 			box.y2 += parentActor.get_parent().get_allocation_box().y1;
 		} else {
@@ -199,6 +201,7 @@ const SectionView = new Lang.Class({
 
 				if (appIconGrids[i]._rowLimit == 1) {
 					appIconGrids[i]._rowLimit = null;
+
 					if (visible < total) {
 						subTabs[i].get_first_child().textCenter.text = SEE_LESS;
 						subTabs[i].get_first_child().textRight.text = "\u25BE";
@@ -206,6 +209,7 @@ const SectionView = new Lang.Class({
 					}
 				} else {
 					appIconGrids[i]._rowLimit = 1;
+
 					if (visible < total) {
 						subTabs[i].get_first_child().textCenter.text = SEE_MORE.replace("xx", total - this.bolt.iconsPerRow);
 						subTabs[i].get_first_child().textRight.text = "\u25B8";
@@ -224,10 +228,10 @@ const SectionView = new Lang.Class({
 
 		switch (direction) {
 			case Gtk.DirectionType.UP:
-				if (parentActor.get_parent().has_style_class_name("icon-grid")) {
+				if (parentActor.get_parent().has_style_class_name("iconGrid")) {
 					let previous = Utils.getPreviousSiblingVisible(parentActor.get_parent());
 					previous.get_first_child().navigate_focus(actor, Gtk.DirectionType.UP, false);
-				} else if (actor.has_style_class_name("tab")) {
+				} else if (actor.has_style_class_name("category")) {
 					if (parentActor == Utils.getFirstChildVisible(this.panel)) {
 						this.tab.grab_key_focus();
 					} else {
@@ -243,10 +247,10 @@ const SectionView = new Lang.Class({
 				if (parentActor == this.tab.get_parent()) { // get_parent() tests we are in the main tabs
 					let child = Utils.getFirstChildVisible(this.panel);
 					child.navigate_focus(actor, Gtk.DirectionType.DOWN, false);
-				} else if (actor.has_style_class_name("tab")) {
+				} else if (actor.has_style_class_name("category")) {
 					let next = Utils.getNextSiblingVisible(parentActor);
 					next.navigate_focus(actor, Gtk.DirectionType.DOWN, false);
-				} else if (parentActor.get_parent().has_style_class_name("icon-grid")) {
+				} else if (parentActor.get_parent().has_style_class_name("iconGrid")) {
 					let next = Utils.getNextSiblingVisible(parentActor.get_parent());
 					if (next) {
 						next.get_first_child().navigate_focus(actor, Gtk.DirectionType.DOWN, false);

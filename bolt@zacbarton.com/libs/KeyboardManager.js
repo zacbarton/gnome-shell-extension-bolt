@@ -8,7 +8,7 @@ const KeyboardManager = new Lang.Class({
 	_init: function(bolt) {
 		this.bolt = bolt;
 		this.keyPressId = 0;
-		this.enabled = false; // managed by animator
+		this.enabled = false; // managed by displayManager
 		this.capture = false;
 	},
 
@@ -39,39 +39,11 @@ const KeyboardManager = new Lang.Class({
 				if (symbol == Clutter.Escape) {
 					this.bolt.searchView.clearText(false);
 					return true;
-				} else if (symbol == Clutter.Up) {
+				} else if (symbol == Clutter.Down || symbol == Clutter.Right) {
 					let firstIcon = this.bolt.searchView.getFirstSearchResult();
-					let northIcon = this.bolt.searchView.getNorthSearchResult();
 
-					if (firstIcon && northIcon && firstIcon.has_style_pseudo_class("focus")) {
-						firstIcon.remove_style_pseudo_class("focus");
-						northIcon.grab_key_focus();
-					}
-					return true;
-				} else if (symbol == Clutter.Down) {
-					let firstIcon = this.bolt.searchView.getFirstSearchResult();
-					let southIcon = this.bolt.searchView.getSouthSearchResult();
-
-					if (firstIcon && southIcon) { // test for both so that on single line results we dont lose focus from the search entry
-						if (firstIcon.has_style_pseudo_class("focus")) {
-							firstIcon.remove_style_pseudo_class("focus");
-							southIcon.grab_key_focus();
-						} else {
-							firstIcon.navigate_focus(null, Gtk.DirectionType.DOWN, false);
-						}
-					}
-					return true;
-				} else if (symbol == Clutter.Right) {
-					let firstIcon = this.bolt.searchView.getFirstSearchResult();
-					let eastIcon = this.bolt.searchView.getEastSearchResult();
-
-					if (firstIcon && eastIcon) { // test for both so that on a single result search we dont lose focus from the search entry
-						if (firstIcon.has_style_pseudo_class("focus")) {
-							firstIcon.remove_style_pseudo_class("focus");
-							eastIcon.grab_key_focus();
-						} else {
-							firstIcon.navigate_focus(null, Gtk.DirectionType.TAB_FORWARD, false);
-						}
+					if (firstIcon) {
+						firstIcon.navigate_focus(null, Gtk.DirectionType.DOWN, false);
 					}
 					return true;
 				}
@@ -81,6 +53,7 @@ const KeyboardManager = new Lang.Class({
 				if (symbol == Clutter.Escape) {
 					if (this.bolt.searchView.entry.get_text() !== "") {
 						this.bolt.searchView.clearText(false);
+						this.bolt.focusOnSelectedTab();
 					} else {
 						this.bolt.hide();
 					}

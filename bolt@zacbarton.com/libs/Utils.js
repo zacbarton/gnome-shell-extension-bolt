@@ -1,5 +1,4 @@
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 
 function onFirstMap(actor, callback) {
 	// supports multiple onFirstMap's
@@ -21,37 +20,42 @@ function onFirstMap(actor, callback) {
 
 function addExtraCssSupport(actor) {
 	onFirstMap(actor, Lang.bind(this, function() {
-		let themeNode = actor.get_theme_node();
+		let themeNode = actor.peek_theme_node();
 
-		let top = themeNode.get_length("top");
-		let left = themeNode.get_length("left");
+		if (themeNode) {
+			let top = themeNode.get_length("top");
+			let left = themeNode.get_length("left");
 
-		let width = themeNode.get_length("width");
-		let height = themeNode.get_length("height");
+			// let width = themeNode.get_length("width");
+			// let height = themeNode.get_length("height");
 
-		let marginTop = themeNode.get_length("margin-top");
-		let marginRight = themeNode.get_length("margin-right");
-		let marginBottom = themeNode.get_length("margin-bottom");
-		let marginLeft = themeNode.get_length("margin-left");
+			let marginTop = themeNode.get_length("margin-top");
+			let marginRight = themeNode.get_length("margin-right");
+			let marginBottom = themeNode.get_length("margin-bottom");
+			let marginLeft = themeNode.get_length("margin-left");
 
-		if (top > 0) {
-			actor.set_y(top);
+			if (top > 0) {
+				actor.set_y(top);
+			}
+			if (left > 0) {
+				actor.set_x(left);
+			}
+
+			// commented out so we can support different theme sizes
+			/*
+			if (width > 0) {
+				actor.set_width(width);
+			}
+			if (height > 0) {
+				actor.set_height(height);
+			}
+			*/
+
+			actor.set_margin_top(marginTop);
+			actor.set_margin_right(marginRight);
+			actor.set_margin_bottom(marginBottom);
+			actor.set_margin_left(marginLeft);
 		}
-		if (left > 0) {
-			actor.set_x(left);
-		}
-
-		if (width > 0) {
-			actor.set_width(width);
-		}
-		if (height > 0) {
-			actor.set_height(height);
-		}
-
-		actor.set_margin_top(marginTop);
-		actor.set_margin_right(marginRight);
-		actor.set_margin_bottom(marginBottom);
-		actor.set_margin_left(marginLeft);
 	}));
 }
 

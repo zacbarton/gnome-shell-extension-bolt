@@ -5,5 +5,5 @@
 	, "settings-schema": "org.gnome.shell.extensions.bolt"
 	, "url": "https://github.com/zacbarton/gnome-shell-extension-bolt"
 	, "uuid": "bolt@zacbarton.com"
-	, "version": 1
+	, "version": 2
 }

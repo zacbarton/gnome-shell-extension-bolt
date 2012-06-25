@@ -14,8 +14,8 @@ const ThemeManager = new Lang.Class({
 
 	_init: function(bolt) {
 		this.bolt = bolt;
-		this.style = "bolt";
-		this.enabled = false;
+		this.theme = "bolt";
+		this.enabled = false; // managed by settingsManager
 		this.reloading = false;
 		this.styleChangedId = 0;
 
@@ -30,11 +30,11 @@ const ThemeManager = new Lang.Class({
 
 	enable: function(enabled) {
 		this.enabled = enabled;
-		
+
 		if (this.enabled) {
 			this.override();
 
-			// it looks like actors needs to be visible to receive the style-changed event and as bolt is most likey hidden
+			// it looks like actors needs to be visible to receive the style-changed event and as bolt is most likely hidden
 			// we wont pick up on the theme change so as a workaround we watch the panel for changes
 			this.styleChangedConnection = Main.layoutManager.panelBox.connect("style-changed", Lang.bind(this, this.reload));
 		} else {
@@ -50,17 +50,28 @@ const ThemeManager = new Lang.Class({
 	reload: function() {
 		if (!this.reloading) {
 			this.reloading = true;
+
+			// reset
+			this.bolt.isPopup = null;
+
+			this.bolt.boxPointer.tabsBackgroundColor = null;
+			this.bolt.boxPointer.contentBackgroundColor = null;
+			this.bolt.boxPointer.actor.set_style("-arrow-background-color: none;");
+
+			this.bolt.content.set_style("background-color: none;"); 
+			this.bolt.tabs.set_style("background-gradient-start: none; background-gradient-end: none;");
+
 			this.override();
 
 			// FIXME not 100% bullet-proof
 			// give the theme some time to be applied before updating our size as its dependant on the icon grid style
-			let delayTimeout = Mainloop.timeout_add(1500, Lang.bind(this, function() {
+			let delayTimeout = Mainloop.timeout_add(3000, Lang.bind(this, function() {
 				this.bolt.settingsManager.setSize();
+				this.bolt.settingsManager.setBackgroundColor();
+				this.reloading = false;
 
 				Mainloop.source_remove(delayTimeout);
 			}));
-			
-			this.reloading = false;
 		}
 	},
 
@@ -72,25 +83,29 @@ const ThemeManager = new Lang.Class({
 
 		// check to see if the theme has support for bolt otherwise use the built-in theme
 		if (stylesheetContent.indexOf("bolt.css") === -1 && stylesheetContent.indexOf("#bolt") === -1) {
-			// as we re-use some of the core components from GS like the icon-grid
-			// our stylesheet.css cant override the styling for those components so
-			// we are forced here to patch the default global stylesheet so that our
-			// styling takes preference over the default
+			// see stylesheet.css for info why we do this
 			let theme = new St.Theme({application_stylesheet: this.boltStylesheet
 				, default_stylesheet: this.defaultStylesheet
 			});
 
+			let customStylesheets = this.themeContext.get_theme().get_custom_stylesheets();
+			for (let i = 0; i < customStylesheets.length; i++) {
+				theme.load_stylesheet(customStylesheets[i]);
+			}
+
 			try {
 				// global.log("overide theme " + this.defaultStylesheet);
-				this.style = "bolt";
-			  	this.themeContext.set_theme(theme);
+
+				this.theme = "bolt";
+				this.themeContext.set_theme(theme);
 			} catch (e) {
 				global.logError("Stylesheet parse error: " + e);
 			}
 		}
 		else {
-			// theme supports bolt styling
-			this.style = "user-theme";
+			// global.log("theme supports bolt");
+
+			this.theme = "user-theme";
 			this.defaultStylesheet = null;
 		}
 	},
@@ -99,8 +114,15 @@ const ThemeManager = new Lang.Class({
 		if (this.defaultStylesheet) {
 			let theme = new St.Theme({theme_stylesheet: this.defaultStylesheet});
 
+			let customStylesheets = this.themeContext.get_theme().get_custom_stylesheets();
+			for (let i = 0; i < customStylesheets.length; i++) {
+				theme.load_stylesheet(customStylesheets[i]);
+			}
+
 			try {
 				// global.log("restoring theme " + this.defaultStylesheet)
+
+				this.theme = null;
 				this.themeContext.set_theme(theme);
 			} catch (e) {
 				global.logError("Stylesheet parse error: " + e);
@@ -108,27 +130,38 @@ const ThemeManager = new Lang.Class({
 		}
 	},
 
+	setSize: function(size) {
+		this.bolt.actor.style_class = size;
+
+		// FIXME not 100% bullet-proof
+		// give the theme some time to be applied before updating our size as its dependant on the icon grid style
+		let delayTimeout = Mainloop.timeout_add(3000, Lang.bind(this, function() {
+			this.bolt.settingsManager.setSize();
+
+			Mainloop.source_remove(delayTimeout);
+		}));
+	},
+
 	setBackgroundColor: function(backgroundColor) {
 		// FIXME if the opacity = 1 then auto disable the blur
-		if (this.style === "bolt") {
-			this.bolt.container.set_style("background-color: " + backgroundColor);
-
-			let tabColor = new Clutter.Color();
-			tabColor.from_string(backgroundColor);
-			tabColor = tabColor.darken();
+		if (this.theme === "bolt") {
+			let tabsColor = new Clutter.Color();
+			tabsColor.from_string(backgroundColor);
+			tabsColor = tabsColor.darken();
 
 			// create a gradient
-			let startColor = tabColor.shade(0.65);
-			let endColor = tabColor.shade(1.05);
+			let tabsStartColor = tabsColor.shade(0.65);
+			let tabsEndColor = tabsColor.shade(1.05);
 
-			startColor = "rgba(" + startColor.red + "," + startColor.green + "," + startColor.blue + "," + ((startColor.alpha / 255) + .13) + ")";
-			endColor = "rgba(" + endColor.red + "," + endColor.green + "," + endColor.blue + "," + ((endColor.alpha / 255) + .13) + ")";
-		
-			this.bolt.tabs.set_style("background-gradient-start: " + startColor + "; background-gradient-end: " + endColor);
-		} else {
-			// let users theme set colors
-			this.bolt.container.set_style("background-color: none;"); 
-			this.bolt.tabs.set_style("background-gradient-start: none; background-gradient-end: none;");
+			tabsStartColor = "rgba(" + tabsStartColor.red + "," + tabsStartColor.green + "," + tabsStartColor.blue + "," + ((tabsStartColor.alpha / 255) + .13) + ")";
+			tabsEndColor = "rgba(" + tabsEndColor.red + "," + tabsEndColor.green + "," + tabsEndColor.blue + "," + ((tabsEndColor.alpha / 255) + .13) + ")";
+
+			this.bolt.boxPointer.tabsBackgroundColor = tabsStartColor;
+			this.bolt.boxPointer.contentBackgroundColor = backgroundColor;
+			this.bolt.boxPointer.actor.set_style("-arrow-background-color: " + tabsStartColor);
+
+			this.bolt.tabs.set_style("background-gradient-start: " + tabsStartColor + "; background-gradient-end: " + tabsEndColor);
+			this.bolt.content.set_style("background-color: " + backgroundColor);
 		}
 	}
 });

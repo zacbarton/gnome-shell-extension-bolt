@@ -1,8 +1,7 @@
 /*
-as we re-use some of the core components from gnome-shell like the icon-grid
-our stylesheet.css cant override the styling for those components so
+we dont seem to be able to theme the scrollbars via this file so
 we are forced to patch the default global stylesheet so that our
 styling takes preference
 
-see themes/default.css
+see libs/ThemeManager.js and themes/default.css
 */

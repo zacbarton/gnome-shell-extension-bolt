@@ -4,11 +4,15 @@ const GioSSS = Gio.SettingsSchemaSource;
 const BLUR_BACKGROUND = "blur-background";
 const MATCH_WALLPAPER = "match-wallpaper";
 const CUSTOM_BACKGROUND_COLOR = "custom-background-color";
+
 const AUTOMATTIC_SIZING = "automattic-sizing";
 const CUSTOM_SIZE = "custom-size";
+const THEME_SIZE = "theme-size";
 
 const SHOW_ANIMATION_TIME = "show-animation-time";
 const ALWAYS_OPEN_TO_HOME = "always-open-to-home";
+const CHANGE_ACTIVITIES_TEXT = "change-activities-text";
+
 const SHOW_APPLICATIONS = "show-applications";
 const SHOW_FILES = "show-files";
 const SHOW_CONTACTS = "show-contacts";

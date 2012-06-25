@@ -1,8 +1,8 @@
 # Bolt
 
-A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu which replaces the overview.
+A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu which replaces the overview. Recommend for use with a dock.
 
-![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/home-tab.png) 
+![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/home-medium.png) 
 
 - - -
 
@@ -34,20 +34,35 @@ Bolt can be easily configured through http://extensions.gnome.org or via the sem
 
 ## Next version
 
-Will focus on better theming support so Gnome-shell authors can integrate Bolt into their themes.
-
-![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/theme-progress.png) 
+Will focus on supporting workspaces.
 
 
 ## Future
 
 * workspace management
-* improved themeing support
+* ~~improved themeing support~~
 * intergrate search-provider extensions
-* change icon sizes
-* change "Bolt" text and/or show an icon
+* ~~change icon sizes~~
+* ~~change "Bolt" text and/or show an icon~~
 * drag to resize
 
+
+## Change log
+
+### Version 2 (25-6-2012)
+* better theming support
+* compatibility with dash-to-dock
+* dont override other extension stylesheets
+* performance improvements
+* code cleaning and bug fixes
+* add scrollbar to preferences
+* setting to enable/disable changing activities text
+* setting to show running apps in home tab
+* setting to change theme size (requires theme support)
+
+
+### Version 1
+* initial release
 
 
 

@@ -28,7 +28,6 @@ const HomeView = new Lang.Class({
 		this.parent(tabLabel, sections, true);
 
 		this.bolt = bolt;
-		this.appSystem = Shell.AppSystem.get_default();
 		this.usageSystem = Shell.AppUsage.get_default();
 
 		this.appFavorites = AppFavorites.getAppFavorites();
@@ -39,10 +38,32 @@ const HomeView = new Lang.Class({
 			}
 		}));
 
+		this.appSystem = Shell.AppSystem.get_default();
+		this.appSystem.connect("app-state-changed", Lang.bind(this, function() {
+			if (this.applicationsType === "running") {
+				this.recentApplicationsCache = null;
+				this.getApplications();
+			}
+		}));
+
 		this.downloads = new Downloads.Downloads();
 		this.downloads.connect("updated", Lang.bind(this, function(downloads, files) {
-			// global.log("downloads fetched");
 			this.getDownloads(files);
+		}));
+
+		// stop users from clicking a different icon when the applications and files are updated
+		this.recentApplicationsEnterConnection = this.recentApplicationsAppIconGrid.actor.connect("enter-event", Lang.bind(this, function() {
+			this.recentApplicationsAllowUpdating = false;
+		}));
+		this.recentApplicationsLeaveConnection = this.recentApplicationsAppIconGrid.actor.connect("leave-event", Lang.bind(this, function() {
+			this.recentApplicationsAllowUpdating = true;
+		}));
+
+		this.recentFilesEnterConnection = this.recentFilesAppIconGrid.actor.connect("enter-event", Lang.bind(this, function() {
+			this.recentFilesAllowUpdating = false;
+		}));
+		this.recentFilesLeaveConnection = this.recentFilesAppIconGrid.actor.connect("leave-event", Lang.bind(this, function() {
+			this.recentFilesAllowUpdating = true;
 		}));
 
 		// vars
@@ -50,7 +71,9 @@ const HomeView = new Lang.Class({
 		this.recentFilesEnabled = true; // managed by settingsManager
 		this.downloadsEnabled = true; // managed by settingsManager
 		this.recentApplicationsCache = null;
+		this.recentApplicationsAllowUpdating = true;
 		this.recentFilesCache = null;
+		this.recentFilesAllowUpdating = true;
 
 		// elements
 		this.recentApplicationsWaiting = new Icon.WaitingIcon();
@@ -63,25 +86,18 @@ const HomeView = new Lang.Class({
 		this.recentFilesWaiting.actor.add_constraint(new Clutter.BindConstraint({source: this.recentFilesAppIconGrid.actor, coordinate: Clutter.BindCoordinate.HEIGHT, offset: - 12}));
 		this.recentFilesAppIconGrid.addItem(this.recentFilesWaiting.actor);
 
-		// FIXME available test
 		if (Zeitgeist.ready) {
-			// global.log("zeitgeist ready");
-
 			this.updateSections();
 			this.downloads.getDownloads();
 
 			this.tab.connect("notify::mapped", Lang.bind(this, this.updateSections));
 		} else {
-			// global.log("zeitgeist NOT ready");
-
 			Utils.onFirstMap(this.panelScroll, Lang.bind(this, function() {
 				this.recentApplicationsWaiting.actor.show();
 				this.recentFilesWaiting.actor.show();
 			}));
 
 			Zeitgeist.connect("ready", Lang.bind(this, function() {
-				// global.log("zeitgeist NOW ready");
-
 				this.updateSections();
 				this.downloads.getDownloads();
 
@@ -161,57 +177,81 @@ const HomeView = new Lang.Class({
 					this.renderApps(subTab, appIconGrid, apps);
 				}
 			}
+		} else if (this.applicationsType === "running") {
+			if (this.recentApplicationsCache === null) {
+				let apps = this.appSystem.get_running();
+
+				let cacheTest = this.bolt.iconsPerRow; // icon size dependant
+				cacheTest += apps.map(function(app){
+					return app.get_id();
+				}).join(",");
+
+				if (this.recentApplicationsCache === cacheTest) {
+					// global.log("favorite apps cached so ignoring");
+					return;
+				} else {
+					// global.log("favorite apps caching");
+					this.recentApplicationsCache = cacheTest;
+					this.renderApps(subTab, appIconGrid, apps);
+				}
+			}
 		} else {
-			let subject = new Zeitgeist.Subject("application://*", "", "", "", "", "", "");
-			let template = new Zeitgeist.Event("http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
+			if (Zeitgeist.available) {
+				let subject = new Zeitgeist.Subject("application://*", "", "", "", "", "", "");
+				let template = new Zeitgeist.Event("http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#AccessEvent", "http://www.zeitgeist-project.com/ontologies/2010/01/27/zg#UserActivity", "", [subject], []);
 
-			Zeitgeist.findEvents([-1, 0]
-				, [template]
-				, Zeitgeist.StorageState.ANY
-				, SectionView.MAX_RESULTS_PER_SECTION
-				, Zeitgeist.ResultType.MOST_RECENT_CURRENT_URI
-				, Lang.bind(this, function(events, error) {
-					let cacheTest = this.bolt.iconsPerRow; // icon size dependant
+				Zeitgeist.findEvents([-1, 0]
+					, [template]
+					, Zeitgeist.StorageState.ANY
+					, SectionView.MAX_RESULTS_PER_SECTION
+					, Zeitgeist.ResultType.MOST_RECENT_CURRENT_URI
+					, Lang.bind(this, function(events, error) {
+						let cacheTest = this.bolt.iconsPerRow; // icon size dependant
 
-					// get the ids of all running apps
-					let runningApps = this.appSystem.get_running();
-					runningApps = runningApps.map(function(app) {
-						return app.get_id();
-					});
+						// get the ids of all running apps
+						let runningApps = this.appSystem.get_running();
+						runningApps = runningApps.map(function(app) {
+							return app.get_id();
+						});
 
-					// filter running apps from the results
-					let apps = [];
-					for (let i = 0, count = events.length; i < count; i++) {
-						let event = events[i];
-						let subject = event.subjects[0];
-						let id = subject.uri.replace("application://", "");
+						// filter running apps from the results
+						let apps = [];
+						for (let i = 0, count = events.length; i < count; i++) {
+							let event = events[i];
+							let subject = event.subjects[0];
+							let id = subject.uri.replace("application://", "");
 
-						if (runningApps.indexOf(id) === -1) {
-							let app = this.appSystem.lookup_app(id) || this.appSystem.lookup_setting(id);
-							if (app) {
-								cacheTest += app.get_id();
-								apps.push(app);
+							if (runningApps.indexOf(id) === -1) {
+								let app = this.appSystem.lookup_app(id) || this.appSystem.lookup_setting(id);
+								if (app) {
+									cacheTest += app.get_id();
+									apps.push(app);
+								}
 							}
 						}
-					}
 
-					if (this.applicationsType === "recent") {
-						if (this.recentApplicationsCache === cacheTest) {
-							// global.log("recent apps cached so ignoring");
-							return;
-						} else {
-							// global.log("recent apps caching");
-							this.recentApplicationsCache = cacheTest;
-							this.renderApps(subTab, appIconGrid, apps);
+						if (this.applicationsType === "recent") {
+							if (this.recentApplicationsCache === cacheTest) {
+								// global.log("recent apps cached so ignoring");
+								return;
+							} else {
+								global.sync_pointer();
+
+								if (this.recentApplicationsAllowUpdating) {
+									// global.log("recent apps caching");
+									this.recentApplicationsCache = cacheTest;
+									this.renderApps(subTab, appIconGrid, apps);
+								}
+							}
 						}
-					}
-				})
-			);
+					})
+				);
+			}
 		}
 	},
 
 	getRecentFiles: function() {
-		if (this.recentFilesEnabled) {
+		if (this.recentFilesEnabled && Zeitgeist.available) {
 			let subTab = this.recentFilesSubTab;
 			let appIconGrid = this.recentFilesAppIconGrid;
 
@@ -250,9 +290,13 @@ const HomeView = new Lang.Class({
 						// global.log("recent docs cached so ignoring");
 						return;
 					} else {
-						// global.log("recent docs caching");
-						this.recentFilesCache = cacheTest;
-						this.renderApps(subTab, appIconGrid, apps);
+						global.sync_pointer();
+
+						if (this.recentFilesAllowUpdating) {
+							// global.log("recent docs caching");
+							this.recentFilesCache = cacheTest;
+							this.renderApps(subTab, appIconGrid, apps);
+						}
 					}
 				})
 			);

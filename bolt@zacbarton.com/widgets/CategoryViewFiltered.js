@@ -1,7 +1,6 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Pango = imports.gi.Pango;
-const Signals = imports.signals;
 const Clutter = imports.gi.Clutter;
 
 const Extension = imports.misc.extensionUtils.getBoltExtension();
@@ -26,7 +25,7 @@ const CategoryViewFiltered = new Lang.Class({
 		this.appIconGrid.removeAll();
 
 		for (let i = 0; i < this.categories.length; i++) {
-			let tab = new St.Bin({style_class: "tab"
+			let tab = new St.Bin({style_class: "category"
 				, x_fill: true
 				, reactive: true
 				, can_focus: true
@@ -101,8 +100,6 @@ const CategoryViewFiltered = new Lang.Class({
 		for (let i = 0, count = apps.length; i < count; i++) {
 			this.iconCache[apps[i].get_id()].actor.visible = true;
 		}
-
-		this.emit("contents-changed");
 	},
 
 	destroy: function() {
@@ -122,4 +119,3 @@ const CategoryViewFiltered = new Lang.Class({
 		this.panel.destroy();
 	}
 });
-Signals.addSignalMethods(CategoryViewFiltered.prototype);

@@ -1,301 +1,291 @@
-/* NOTE that a future version will have a clearer class naming convention */
-
-/* this theme is used when the current gnome-shell theme doesnt support bolt
- * and as a result has to override styles that have been designed for the
- * overview and not for bolt.
- */
-
-/* common styling */
-#bolt .tab {
-	font-weight: normal;
-}
-
-	#bolt .tab:focus {
-		color: rgba(255, 255, 255, .8) !important;
-	}
-
-	#bolt .tab:selected {
-		color: #fff !important;
-	}
-
-#bolt .panels {
-	padding: 0px; /* gap between tabs and panel content */
-	border-radius: 0px 0px 3px 3px; /* align with container radius */
-}
-
-		#bolt .panel StBoxLayout.notice {
-			color: #fff;
-			font-size: 15px;
-			font-weight: bold;
-			padding-bottom: 35px;
-		}
-
-			#bolt > .panels .panel .notice {
-				padding-right: 15px;
-			}
-
-				#bolt > .panels .panel .notice.waiting {
-					padding-bottom: 85px;
-				}
-
-
-/* specific styling */
 #bolt {
-	font-family: Ubuntu;
-	background: #000;
-	
-	border: 0px solid rgba(16, 16, 16, .8);
-	border-right-width: 1px;
-	border-bottom-width: 1px;
-	
-	border-radius: 0px 0px 5px 0px;
-	box-shadow: 3px 3px 10px 8px rgba(0, 0, 0, .8);
+	-bolt-is-popup: 0;
 }
 
-	#bolt .prefs {
-		background: rgba(124, 124, 124, 0.15);
-		border-radius: 1px;
-		height: 7px;
-		width: 7px;
-		transition-duration: 300;
-	}
+	#bolt .content {
+		font-family: Ubuntu;
+		font-weight: normal;
 
-		#bolt .prefs:hover {
-			background-color: rgba(255, 255, 255, 0.7);
-		}
-
-	#bolt .search {
-		width: 200px;
-		font-size: 14px;
-		border-radius: 5px;
-		padding: 3px 6px;
-
-		background: rgba(255, 255, 255, 0.65);
-		color: #444;
-	}
-
-		#bolt .search:focus {
-			background: rgba(255, 255, 255, 0.85);
-			color: #000;
-		}
-
-	/* main tabs */
-	#bolt > .tabs {
-		padding: 0px 28px 0px 10px;
-	   	
-		border: 0px solid rgba(124, 124, 124, .22);
+		border: 0px solid rgba(16, 16, 16, .4);
+		border-right-width: 1px;
 		border-bottom-width: 1px;
+		border-radius: 0px 0px 8px 0px;
 
-		background-gradient-direction: horizontal;
-		box-shadow: inset 0px -1px 1px rgba(16, 16, 16, .5) !important; /* 2nd last bottom line */
+		background-color: rgba(0, 0, 0, .6);
+		box-shadow: 3px 3px 10px 8px rgba(255 0, 0, .8);
 	}
 
-		#bolt > .tabs > .tab {
-			font-family: Ubuntu Light, DejaVu Sans Condensed;
-			font-size: 20px;
-			padding: 10px 24px 13px 24px;
+		#bolt .tabs {
+			padding: 0px 28px 0px 10px;
 
-			color: rgba(255, 255, 255, .5);
+			border: 0px solid rgba(124, 124, 124, .22);
+			border-bottom-width: 1px;
+
+			background-color: rgba(0, 0, 0, .72);
+			background-gradient-direction: horizontal;
+
+			box-shadow: inset 0px -1px 1px rgba(16, 16, 16, .5); /* 2nd last bottom line */
 		}
 
-	/* sub tabs */
-	#bolt > .panels .panel .tabs {
-		padding: 6px 0px 6px 28px;
-		border: 0px solid rgba(124, 124, 124, .22);
-		border-bottom-width: 1px;
+			#bolt .tabs .tab {
+				font-family: Ubuntu Light, DejaVu Sans Condensed;
+				font-weight: normal;
+				font-size: 20px;
 
-		box-shadow: inset 0px -1px 1px rgba(16, 16, 16, .15) !important; /* line above bottom border */
-	}
-
-		#bolt > .panels .panel .tabs .tab {
-			font-size: 13px;
-			padding: 2px 7px;
-			margin-right: 10px;
-			color: rgba(255, 255, 255, .5);
-		}
-
-			#bolt > .panels .tabs .tab:focus {
-				border-radius: 4px;
-				background-color: rgba(255, 255, 255, 0.13) !important;
-			}
-
-			#bolt > .panels .tabs .tab:selected:focus {
-				background-color: transparent !important;
-			}
-
-			/* section view */
-			#bolt > .panels .panelScroll .panel .tabs .tab {
-				color: #fff !important;
-			}
-
-			#bolt > .panels .tabs .tab StLabel.center,
-			#bolt > .panels .tabs .tab StLabel.right {
-				font-size: 11px;
-				
-				padding-top: 2px;
-				padding-left: 10px;
+				padding: 10px 24px 13px 24px;
 				color: rgba(255, 255, 255, .5);
 			}
 
-			#bolt > .panels .tabs .tab StLabel.right {
-				padding-top: 0px ;
-				padding-left: 7px ;
-			}
-
-				#bolt > .panels .tabs .tab StLabel.right.rotated {
-					padding-top: 1px !important;
+				#bolt .tabs .tab:focus StLabel {
+					color: rgba(255, 255, 255, .8) !important;
 				}
 
-	#bolt > .panels .panel .panels {
-
-	}
-
-		/* categoryView */
-		#bolt > .panels .panel .panelScroll {
-			margin-top: 15px;
-			margin-left: 5px;
-		}
-
-		/* sectionView */
-		#bolt > .panels .panelScroll .panel .icon-grid {
-			margin-top: 15px;
-			margin-left: 5px;
-		}
-
-			#bolt > .panels .icon-grid {
-				-shell-grid-horizontal-item-size: 147px !important;
-				-shell-grid-vertical-item-size: 132px !important;
-
-				/* override themes that style the overview but dont support bolt */
-				border: 0px !important;
-				spacing: 0px !important;
-			}
-
-				#bolt > .panels .icon-grid .overview-icon {
-					icon-size: 64px !important;
-					width: 147px; /* same as -shell-grid-horizontal-item-size */
-					height: 113px;  /* smaller than -shell-grid-vertical-item-size which pulls the label closer to the icon */
-					padding: 0px 22px !important; /* constrict the label */
-
-					/* debugging */
-					border: 0px solid red !important;
- 
-					/* override themes that style the overview but dont support bolt */
-					spacing: 0px !important;
-					background-image: none !important;
+				#bolt .tabs .tab:selected StLabel {
+					color: #fff !important;
 				}
 
-					#bolt > .panels .icon-grid .overview-icon StLabel {
-						padding: 2px !important;
-						font-size: 12px !important;
-						font-weight: normal  !important;
+			#bolt .prefs {
+				background: rgba(124, 124, 124, 0.15);
+				border-radius: 1px;
+				height: 7px;
+				width: 7px;
+				transition-duration: 300;
+			}
+
+				#bolt .prefs:hover {
+					background-color: rgba(255, 255, 255, 0.7);
+				}
+
+			#bolt .tabs .search {
+				width: 200px;
+				font-size: 14px;
+				border-radius: 5px;
+				padding: 3px 6px;
+
+				background: rgba(255, 255, 255, 0.65);
+				color: #444;
+			}
+
+				#bolt .tabs .search:focus {
+					background: rgba(255, 255, 255, 0.85);
+					color: #000;
+				}
+
+		#bolt .panels {
+			padding: 0px; /* gap between tabs and panel content */
+			border-radius: 0px 0px 8px 0px; /* align with container radius */
+		}
+
+			#bolt .panels .categories {
+				padding: 6px 0px 6px 28px;
+				border-image: url("divider.png") 1 1 0 3;
+			}
+
+				#bolt .panels .categories .category {
+					font-size: 13px;
+					padding: 2px 7px;
+					margin-right: 10px;
+					color: rgba(255, 255, 255, .5);
+				}
+
+					#bolt .panels .categories .category:focus {
+						border-radius: 4px;
+						background-color: rgba(255, 255, 255, 0.13);
+					}
+
+					#bolt .panels .categories .category:selected:focus {
+						background-color: transparent;
+					}
+
+				#bolt .panels .categoryView .categories .category {
+				}
+
+					#bolt .panels .categoryView .categories .category:focus StLabel {
+						color: rgba(255, 255, 255, .8) !important;
+					}
+
+					#bolt .panels .categoryView .categories .category:selected StLabel {
+						color: #fff !important;
+					}
+
+				#bolt .panels .sectionView .categories .category StLabel {
+					color: #fff;
+				}
+
+					#bolt .panels .sectionView .categories .category StLabel.center,
+					#bolt .panels .sectionView .categories .category StLabel.right {
+						font-size: 11px;
+
+						padding-top: 2px;
+						padding-left: 10px;
+						color: rgba(255, 255, 255, .5);
+					}
+
+					#bolt .panels .sectionView .categories .category StLabel.right {
+						padding-top: 0px;
+						padding-left: 7px;
+					}
+
+						#bolt .panels .sectionView .categories .category StLabel.right.rotated {
+							padding-top: 1px !important;
+					}
+
+			#bolt .panels .categoryView .panelScroll,
+			#bolt .panels .sectionView .iconGrid {
+				margin-top: 15px;
+				margin-left: 5px;
+			}
+
+				#bolt .iconGrid {
+					-shell-grid-horizontal-item-size: 147px;
+					-shell-grid-vertical-item-size: 132px;
+				}
+
+					#bolt .iconGrid .regularIcon {
+						icon-size: 64px;
+						width: 147px; /* same as -shell-grid-horizontal-item-size */
+						height: 113px;  /* smaller than -shell-grid-vertical-item-size which pulls the label closer to the icon */
+						padding: 0px 17px; /* constrict the label */
+						text-align: center;
 
 						/* debugging */
 						border: 0px solid red;
-
-						/* override themes that style the overview but dont support bolt */
-						spacing: 0px !important;
-						margin: 0px !important;
-						text-shadow: transparent 0px 0px 0px !important;
 					}
 
-						#bolt .app-well-app:hover > .overview-icon,
-						#bolt .app-well-app:focus > .overview-icon,
-						#bolt .app-well-app.running > .overview-icon {
-							/* 
-							dont show or do anything which is the opposite of the overview
-							we highlight the label not the entire icon as highlighting the icon
-							when there is a mixture of 1 and 2 line labels looks bad
-							*/
+						#bolt .iconGrid .regularIcon StLabel {
+							padding: 2px;
+							font-size: 12px;
+							font-weight: normal;
+							color: rgba(255, 255, 255, .95);
 
-							/* override themes that style the overview but dont support bolt */
-							background-image: none;
-							color: #fff !important;
-							padding: 0px !important;
-							border: 0px !important;
-							background: transparent !important;
-							background-color: transparent !important;
-							background-gradient-end: transparent !important;
-							background-gradient-start: transparent !important;
-							
-							text-shadow: transparent 0px 0px 0px !important;
-							box-shadow: 0px 0px 0px 0px 0px transparent !important;
+							/* debugging */
+							border: 0px solid blue;
 						}
 
-							#bolt .app-well-app:focus > .overview-icon StLabel {
+							#bolt .iconContainer:focus .regularIcon StLabel {
 								border-radius: 4px;
 								background-color: rgba(255, 255, 255, 0.13);
 							}
 
+			#bolt .panels .notice {
+				color: #fff;
+				font-size: 14px;
+				font-weight: bold;
 
-/* st widgets */
-/* without this the panels and below are solid black?!? (hack) */
-#bolt StBoxLayout {
-	border: 0px;
-	spacing: 0px;
-	padding: 0px;
-	background: transparent;
-	background-color: transparent;
+				padding-bottom: 35px;
+				border: 0px solid red;
+			}
 
-	/* override themes that style the overview but dont support bolt */
-	border-image: none !important;
-	background-gradient-end: transparent !important;
-	background-gradient-start: transparent !important;
-	box-shadow: 0px 0px 0px 0px 0px transparent !important;
+				#bolt .panels .sectionView .notice {
+					padding-left: 15px;
+				}
+
+				#bolt .panels .notice.waiting {
+					padding-bottom: 85px;
+				}
+
+			#bolt StScrollView.vfade
+			{
+				-st-vfade-offset: 68px;
+			}
+
+				#bolt StScrollView StScrollBar
+				{
+					min-width: 3px !important;
+					min-height: 3px !important;
+					border: 5px solid transparent;
+					border-right-width: 8px;
+
+					/* override themes that style the overview but dont support bolt */
+					spacing: 0px !important;
+					padding: 0px !important;
+					box-shadow: 0px 0px 0px 0px 0px transparent !important;
+				}
+
+					#bolt StScrollBar StBin#trough {
+						/* override themes that style the overview but dont support bolt */
+						border: 0px !important;
+						spacing: 0px !important;
+						padding: 0px !important;
+						background-color: transparent !important;
+						background-gradient-end: transparent !important;
+						background-gradient-start: transparent !important;
+						box-shadow: 0px 0px 0px 0px 0px transparent !important;
+
+						border-image: none;
+					}
+
+					#bolt StScrollBar StButton#vhandle
+					{
+						border: 0px;
+						border-radius: 2px;
+						background-image: none;
+						background-color: rgba(255, 255, 255, 0.2);
+
+						transition-duration: 300;
+
+						/* override themes that style the overview but dont support bolt */
+						border-image: none;
+						background-gradient-end: rgba(255, 255, 255, 0.2);
+						background-gradient-start: rgba(255, 255, 255, 0.2);
+						box-shadow: 0px 0px 0px 0px 0px transparent !important;
+					}
+
+						#bolt StScrollBar StButton#vhandle:hover {
+							border: 1px solid rgba(255, 255, 255, 0.5);
+							background-color: rgba(255, 255, 255, 0.7);
+
+							/* override themes that style the overview but dont support bolt */
+							background-gradient-end: rgba(255, 255, 255, 0.7);
+							background-gradient-start: rgba(255, 255, 255, 0.7);
+						}
+
+/* sizing support */
+#bolt.large .tabs .tab {
+	font-size: 22px;
 }
 
-#bolt StScrollView.vfade
-{
-	-st-vfade-offset: 68px;
+#bolt.large .tabs .search {
+	width: 250px;
+	font-size: 15px;
 }
 
-	#bolt StScrollView StScrollBar
-	{
-		min-width: 3px !important;
-		min-height: 3px !important;
-		border: 5px solid transparent;
-		border-right-width: 8px;
+#bolt.large .iconGrid {
+	-shell-grid-horizontal-item-size: 155px;
+	-shell-grid-vertical-item-size: 135px;
+}
 
-		/* override themes that style the overview but dont support bolt */
-		spacing: 0px !important;
-		padding: 0px !important;
-		box-shadow: 0px 0px 0px 0px 0px transparent !important;
+	#bolt.large .iconGrid .regularIcon {
+		icon-size: 72px;
+		width: 155px;
+		height: 123px;
 	}
 
-		#bolt StScrollBar StBin#trough {
-			/* override themes that style the overview but dont support bolt */
-			border: 0px !important;
-			spacing: 0px !important;
-			padding: 0px !important;
-			background-color: transparent !important;
-			background-gradient-end: transparent !important;
-			background-gradient-start: transparent !important;
-			box-shadow: 0px 0px 0px 0px 0px transparent !important;
+#bolt.large .panels .notice {
+	font-size: 15px;
+}
 
-			border-image: none;
-		}
 
-		#bolt StScrollBar StButton#vhandle
-		{
-			border: 0px;
-			border-radius: 2px;
-			background-image: none;
-			background-color: rgba(255, 255, 255, 0.2);
+#bolt.small .tabs .tab {
+	font-size: 18px;
+}
 
-			transition-duration: 300;
+#bolt.small .tabs .search {
+	width: 150px;
+	font-size: 13px;
+}
 
-			/* override themes that style the overview but dont support bolt */
-			border-image: none;
-			background-gradient-end: rgba(255, 255, 255, 0.2);
-			background-gradient-start: rgba(255, 255, 255, 0.2);
-			box-shadow: 0px 0px 0px 0px 0px transparent !important;
-		}
+#bolt.small .iconGrid {
+	-shell-grid-horizontal-item-size: 125px;
+	-shell-grid-vertical-item-size: 115px;
+}
 
-			#bolt StScrollBar StButton#vhandle:hover {
-				border: 1px solid rgba(255, 255, 255, 0.5);
-				background-color: rgba(255, 255, 255, 0.7);
+	#bolt.small .iconGrid .regularIcon {
+		icon-size: 48px;
+		width: 125px;
+		height: 96px;
+	}
 
-				/* override themes that style the overview but dont support bolt */
-				background-gradient-end: rgba(255, 255, 255, 0.7);
-				background-gradient-start: rgba(255, 255, 255, 0.7);
-			}
+#bolt.small .panels .notice {
+	font-size: 13px;
+}
