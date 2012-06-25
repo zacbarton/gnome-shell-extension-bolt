@@ -2,13 +2,13 @@
 
 A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu which replaces the overview. Recommend for use with a dock.
 
-![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/home-medium.png) 
+![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/v2/home-medium.png) 
 
 - - -
 
 Bolt can be easily configured through http://extensions.gnome.org or via the semi-transparent square to the left of the search box.
 
-![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/preferences.png)
+![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/v2/preferences.png)
 
 ## Installation
 
