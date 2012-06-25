@@ -1,14 +1,24 @@
 # Bolt
 
-A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the classic Gnome 2 menu which replaces the overview. Recommend for use with a dock.
+A launcher thats a fusion of the Ubuntu dash, the Gnome-shell overview and the 
+classic Gnome 2 menu which replaces the overview. Recommend for use with a dock.
 
 ![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/v2/home-medium.png) 
+Bolt using the medium theme size.
 
 - - -
 
-Bolt can be easily configured through http://extensions.gnome.org or via the semi-transparent square to the left of the search box.
+![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/v2/home-small.png) 
+Bolt using the small theme size.
+
+- - -
+
+
+Bolt can be easily configured through http://extensions.gnome.org or via the 
+semi-transparent square to the left of the search box.
 
 ![Screenshot](https://github.com/zacbarton/gnome-shell-extension-bolt/raw/master/screenshots/v2/preferences.png)
+
 
 ## Installation
 
@@ -32,6 +42,14 @@ Bolt can be easily configured through http://extensions.gnome.org or via the sem
 * After disabling bolt and viewing the overview gnome-shell sometimes crashes
 
 
+## Theming
+
+Bolt can be themed just like any other part of Gnome-shell. When a Gnome-shell theme
+doesnt include support for Bolt a default is applied as seen above. Details on 
+how to add theming support can be found [here](https://github.com/zacbarton/gnome-shell-extension-bolt/wiki/Theming)
+and you can find themes where I've added support [here](https://github.com/zacbarton/gnome-shell-extension-bolt/tree/master/gnome-shell-themes).
+
+
 ## Next version
 
 Will focus on supporting workspaces.
@@ -50,7 +68,7 @@ Will focus on supporting workspaces.
 ## Change log
 
 ### Version 2 (25-6-2012)
-* better theming support
+* better theming support ()
 * compatibility with dash-to-dock
 * dont override other extension stylesheets
 * performance improvements
