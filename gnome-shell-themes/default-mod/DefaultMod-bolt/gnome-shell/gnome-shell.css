@@ -1,0 +1,235 @@
+@import url("/usr/share/themes/themes/DefaultMod/gnome-shell/gnome-shell.css");
+@import url("../../../.themes/DefaultMod/gnome-shell/gnome-shell.css"); /* we cant use ~/ */
+
+#bolt {
+	-bolt-is-popup: 1;
+}
+
+	#bolt .content {
+		font-weight: normal;
+	}
+
+		#bolt .tabs {
+			padding: 0px 28px 0px 10px;
+
+			border: 0px solid rgba(124, 124, 124, .22);
+			border-bottom-width: 1px;
+			border-radius: 8px 8px 0px 0px;
+
+			box-shadow: inset 0px -1px 1px rgba(16, 16, 16, .5); /* 2nd last bottom line */
+		}
+
+			#bolt .tabs .tab {
+				font-weight: normal;
+				font-size: 20px;
+
+				padding: 10px 24px 11px 24px;
+				color: rgba(255, 255, 255, .5);
+			}
+
+				#bolt .tabs .tab:focus StLabel {
+					color: rgba(255, 255, 255, .8) !important;
+				}
+
+				#bolt .tabs .tab:selected StLabel {
+					color: #fff !important;
+				}
+
+			#bolt .prefs {
+				background: rgba(124, 124, 124, 0.15);
+				border-radius: 1px;
+				height: 7px;
+				width: 7px;
+				transition-duration: 300;
+			}
+
+				#bolt .prefs:hover {
+					background-color: rgba(255, 255, 255, 0.7);
+				}
+
+			#bolt .tabs .search {
+				width: 200px;
+				font-size: 14px;
+				border-radius: 5px;
+				padding: 3px 6px;
+
+				background: rgba(255, 255, 255, 0.65);
+				color: #444;
+			}
+
+				#bolt .tabs .search:focus {
+					background: rgba(255, 255, 255, 0.85);
+					color: #000;
+				}
+
+				#bolt .tabs .search StIcon {
+					color: rgba(0, 0, 0, 0.95);
+				}
+
+		#bolt .panels {
+			padding: 0px; /* gap between tabs and panel content */
+			border-radius: 0px 0px 8px 8px; /* align with container radius */
+		}
+
+			#bolt .panels .categories {
+				padding: 6px 0px 6px 28px;
+				border-image: url("divider.png") 1 1 0 3;
+			}
+
+				#bolt .panels .categories .category {
+					font-size: 13px;
+					padding: 2px 7px;
+					margin-right: 10px;
+					color: rgba(255, 255, 255, .5);
+				}
+
+					#bolt .panels .categories .category:focus {
+						border-radius: 4px;
+						background-color: rgba(255, 255, 255, 0.13);
+					}
+
+					#bolt .panels .categories .category:selected:focus {
+						background-color: transparent;
+					}
+
+				#bolt .panels .categoryView .categories .category {
+				}
+
+					#bolt .panels .categoryView .categories .category:focus StLabel {
+						color: rgba(255, 255, 255, .8) !important;
+					}
+
+					#bolt .panels .categoryView .categories .category:selected StLabel {
+						color: #fff !important;
+					}
+
+				#bolt .panels .sectionView .categories .category StLabel {
+					color: #fff;
+				}
+
+					#bolt .panels .sectionView .categories .category StLabel.center,
+					#bolt .panels .sectionView .categories .category StLabel.right {
+						font-size: 11px;
+
+						padding-top: 2px;
+						padding-left: 10px;
+						color: rgba(255, 255, 255, .5);
+					}
+
+					#bolt .panels .sectionView .categories .category StLabel.right {
+						padding-top: 0px;
+						padding-left: 7px;
+					}
+
+						#bolt .panels .sectionView .categories .category StLabel.right.rotated {
+							padding-top: 1px !important;
+					}
+
+			#bolt .panels .categoryView .panelScroll,
+			#bolt .panels .sectionView .iconGrid {
+				margin-top: 15px;
+				margin-left: 5px;
+			}
+
+				#bolt .iconGrid {
+					-shell-grid-horizontal-item-size: 147px;
+					-shell-grid-vertical-item-size: 132px;
+				}
+
+					#bolt .iconGrid .regularIcon {
+						icon-size: 64px;
+						width: 147px; /* same as -shell-grid-horizontal-item-size */
+						height: 113px;  /* smaller than -shell-grid-vertical-item-size which pulls the label closer to the icon */
+						padding: 0px 17px; /* constrict the label */
+						text-align: center;
+
+						/* debugging */
+						border: 0px solid red;
+					}
+
+						#bolt .iconGrid .regularIcon StLabel {
+							padding: 2px;
+							font-size: 12px;
+							font-weight: normal;
+							color: rgba(255, 255, 255, .95);
+
+							/* debugging */
+							border: 0px solid blue;
+						}
+
+							#bolt .iconContainer:focus .regularIcon StLabel {
+								border-radius: 4px;
+								background-color: rgba(255, 255, 255, 0.13);
+							}
+
+			#bolt .panels .notice {
+				color: #fff;
+				font-size: 14px;
+				font-weight: bold;
+
+				padding-bottom: 35px;
+				border: 0px solid red;
+			}
+
+				#bolt .panels .sectionView .notice {
+					padding-left: 15px;
+				}
+
+				#bolt .panels .notice.waiting {
+					padding-bottom: 85px;
+				}
+				
+				#bolt StScrollView StScrollBar
+				{
+					
+					border: 5px solid transparent;
+				}
+
+/* sizing support */
+#bolt.large .tabs .tab {
+	font-size: 22px;
+}
+
+#bolt.large .tabs .search {
+	width: 250px;
+	font-size: 15px;
+}
+
+#bolt.large .iconGrid {
+	-shell-grid-horizontal-item-size: 155px;
+	-shell-grid-vertical-item-size: 135px;
+}
+
+	#bolt.large .iconGrid .regularIcon {
+		icon-size: 72px;
+		width: 155px;
+		height: 123px;
+	}
+
+#bolt.large .panels .notice {
+	font-size: 15px;
+}
+
+#bolt.small .tabs .tab {
+	font-size: 18px;
+}
+
+#bolt.small .tabs .search {
+	width: 150px;
+	font-size: 13px;
+}
+
+#bolt.small .iconGrid {
+	-shell-grid-horizontal-item-size: 125px;
+	-shell-grid-vertical-item-size: 115px;
+}
+
+	#bolt.small .iconGrid .regularIcon {
+		icon-size: 48px;
+		width: 125px;
+		height: 96px;
+	}
+
+#bolt.small .panels .notice {
+	font-size: 13px;
+}
