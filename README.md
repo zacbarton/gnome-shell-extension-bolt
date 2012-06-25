@@ -68,7 +68,7 @@ Will focus on supporting workspaces.
 ## Change log
 
 ### Version 2 (25-6-2012)
-* better theming support ()
+* better theming support ([link](https://github.com/zacbarton/gnome-shell-extension-bolt/tree/master/gnome-shell-themes))
 * compatibility with dash-to-dock
 * dont override other extension stylesheets
 * performance improvements
